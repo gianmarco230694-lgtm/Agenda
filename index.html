@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AgendaLavoro</title>
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="AgendaLavoro">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#1A73E8">
+    
+    <link id="manifest-link" rel="manifest">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #F0F2F5; --card: #ffffff; --primary: #1A73E8; 
+            --dark: #1F2937; --accent: #8AB4F8; --text: #111827; 
+            --border: #E5E7EB; --max-width: 600px; --danger: #EF4444;
+            --success: #22C55E;
+        }
+
+        body.dark-mode {
+            --bg: #0F172A; --card: #1E293B; --text: #F8FAFC;
+            --dark: #020617; --border: #334155; --accent: #38BDF8;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; background: var(--bg); 
+            color: var(--text); margin: 0; padding: 0; padding-bottom: 80px;
+            display: flex; justify-content: center;
+        }
+
+        .app-container { width: 100%; max-width: var(--max-width); padding: 10px 15px; box-sizing: border-box; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin: 20px 0; }
+        .header h1 { color: var(--primary); font-size: 1.4rem; margin: 0; font-weight: 800; }
+        
+        .theme-toggle {
+            background: var(--card); border: 1px solid var(--border); cursor: pointer;
+            width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
+        }
+
+        .card { 
+            background: var(--card); padding: 25px; border-radius: 24px; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); display: flex; justify-content: space-around; padding: 15px; border-top: 1px solid var(--border); z-index: 100; }
+        .nav-btn { background: none; border: none; color: var(--text); opacity: 0.5; font-weight: 700; cursor: pointer; font-size: 0.8rem; font-family: inherit; }
+        .nav-btn.active { color: var(--primary); opacity: 1; }
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .divider-pro { text-align: center; margin: 30px 0 20px; position: relative; display: flex; align-items: center; justify-content: center; }
+        .divider-pro span { background: var(--bg); color: var(--primary); padding: 4px 18px; border-radius: 50px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; z-index: 2; border: 1px solid var(--border); }
+        .divider-pro::before { content: ""; position: absolute; width: 100%; height: 1px; background: var(--border); z-index: 1; }
+
+        label { font-size: 0.7rem; font-weight: 700; color: var(--text); opacity: 0.5; margin-bottom: 6px; display: block; text-transform: uppercase; }
+        input, select, textarea { width: 100%; min-height: 50px; padding: 12px; margin-bottom: 15px; border: 1px solid var(--border); border-radius: 14px; font-size: 1rem; box-sizing: border-box; background: var(--bg); color: var(--text); font-family: inherit; }
+        .btn-main { background: var(--primary); color: white; width: 100%; padding: 18px; border: none; border-radius: 16px; font-weight: 700; cursor: pointer; font-size: 1rem; margin-top: 15px; text-transform: uppercase; }
+
+        .stats-card { background: var(--primary); color: white; padding: 18px; border-radius: 22px; margin-bottom: 20px; box-shadow: 0 8px 15px rgba(26, 115, 232, 0.2); }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 10px; }
+        .stats-item small { text-transform: uppercase; font-size: 0.65rem; font-weight: 700; opacity: 0.8; display: block; }
+        .stats-item b { font-size: 1.05rem; }
+
+        #container-pillole { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 15px; padding-top: 12px; border-top: 1px dashed rgba(255,255,255,0.3); }
+        .txt-stat { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+        .txt-riposo { color: #86EFAC; }
+        .txt-ferie { color: #FEF08A; }
+        .txt-malattia { color: #FECACA; }
+        .txt-104 { color: #BFDBFE; }
+        .txt-permesso { color: #E9D5FF; }
+        .txt-congedo { color: #BAE6FD; }
+        .txt-altro { color: #F3F4F6; }
+
+        .log-title-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .log-title-bar h2 { font-size: 1.1rem; margin: 0; color: var(--primary); font-weight: 800; text-transform: uppercase; }
+        .btn-reset-top { background: rgba(26, 115, 232, 0.1); color: var(--primary); border: 1px solid var(--primary); padding: 6px 14px; border-radius: 10px; font-size: 0.75rem; font-weight: 800; cursor: pointer; text-transform: uppercase; font-family: 'Inter', sans-serif; }
+        .log-item { background: var(--card); border-radius: 20px; padding: 18px; margin-bottom: 15px; border: 1px solid var(--border); }
+        .log-header { display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+        .log-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        .log-part { background: var(--bg); padding: 12px; border-radius: 12px; border: 1px solid var(--border); font-size: 1.05rem; line-height: 1.4; position: relative; }
+        .log-part b { color: var(--primary); display: block; font-size: 0.85rem; text-transform: uppercase; margin-bottom: 4px; }
+        .log-time-badge { position: absolute; top: 12px; right: 12px; font-size: 0.7rem; font-weight: 800; color: var(--primary); background: rgba(26, 115, 232, 0.1); padding: 2px 6px; border-radius: 6px; text-align: right; }
+        .log-note { font-size: 0.85rem; margin-top: 12px; font-style: italic; opacity: 0.9; word-wrap: break-word; overflow-wrap: break-word; white-space: pre-wrap; background: var(--bg); padding: 10px; border-radius: 10px; border: 1px dashed var(--border); }
+        .log-actions { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-edit { background: var(--bg); color: var(--text); border: 1px solid var(--border); flex: 1; padding: 12px; border-radius: 12px; cursor: pointer; font-weight: 600; }
+        .btn-del { background: #fee2e2; color: var(--danger); border: none; flex: 1; padding: 12px; border-radius: 12px; cursor: pointer; font-weight: 600; }
+
+        .backup-section { margin-bottom: 30px; }
+        .backup-section h3 { font-size: 0.9rem; text-transform: uppercase; color: var(--primary); margin-bottom: 15px; }
+        .btn-backup { width: 100%; padding: 15px; border-radius: 14px; border: 1px solid var(--border); background: var(--card); color: var(--text); font-weight: 700; cursor: pointer; margin-bottom: 10px; text-align: left; display: flex; align-items: center; gap: 12px; }
+        .btn-backup i { font-style: normal; font-size: 1.2rem; }
+
+        .hidden { display: none !important; }
+        .empty-msg { text-align: center; padding: 40px; opacity: 0.5; font-style: italic; }
+    </style>
+</head>
+<body class="">
+
+<div class="app-container">
+    <header class="header">
+        <h1 id="app-title">AgendaLavoro</h1>
+        <button class="theme-toggle" onclick="toggleDarkMode()">💡</button>
+    </header>
+
+    <main id="page-home">
+        <section class="card">
+            <label>Tipo Evento</label>
+            <select id="tipo" onchange="checkTipo()">
+                <option value="">-- SELEZIONA --</option>
+                <option value="Lavoro">Lavoro</option>
+                <option value="Riposo">Riposo</option>
+                <option value="Ferie">Ferie</option>
+                <option value="Permesso">Permesso</option>
+                <option value="Malattia">Malattia</option>
+                <option value="104">104</option>
+                <option value="Congedo">Congedo</option>
+                <option value="Altro">Altro</option>
+            </select>
+
+            <div id="box-date" class="hidden">
+                <div class="grid">
+                    <div><label id="label-data-inizio">Data</label><input type="date" id="data"></div>
+                    <div id="box-data-fine" class="hidden"><label>Al (Fine)</label><input type="date" id="data_fine"></div>
+                </div>
+            </div>
+
+            <div id="form-lavoro" class="hidden">
+                <label>Turno Generale</label>
+                <select id="categoria">
+                    <option value="">-- Seleziona Turno --</option>
+                    <option value="Mattina">Mattina</option>
+                    <option value="Notturna">Notturna</option>
+                    <option value="Seminotte">Seminotte</option>
+                    <option value="Verdone">Verdone</option>
+                    <option value="Bussolotto">Bussolotto</option>
+                </select>
+
+                <div class="divider-pro"><span>1ª Parte</span></div>
+                <div class="grid">
+                    <div><label>Inizio</label><input type="time" id="i1"></div>
+                    <div><label>Fine</label><input type="time" id="f1"></div>
+                </div>
+                <div class="grid"><input type="text" id="li1" placeholder="Località Inizio"><input type="text" id="lf1" placeholder="Località Fine"></div>
+                <div class="grid"><input type="text" id="vett1" placeholder="N° Vettura"><input type="text" id="turn1" placeholder="N° Turno"></div>
+
+                <div class="divider-pro"><span>2ª Parte</span></div>
+                <div class="grid">
+                    <div><label>Inizio</label><input type="time" id="i2"></div>
+                    <div><label>Fine</label><input type="time" id="f2"></div>
+                </div>
+                <div class="grid"><input type="text" id="li2" placeholder="Località Inizio"><input type="text" id="lf2" placeholder="Località Fine"></div>
+                <div class="grid"><input type="text" id="vett2" placeholder="N° Vettura"><input type="text" id="turn2" placeholder="N° Turno"></div>
+
+                <div class="divider-pro"><span>Straordinario</span></div>
+                <div class="grid">
+                    <div><label>Inizio</label><input type="time" id="ei"></div>
+                    <div><label>Fine</label><input type="time" id="ef"></div>
+                </div>
+                <div class="grid"><input type="text" id="lei" placeholder="Località Inizio"><input type="text" id="lef" placeholder="Località Fine"></div>
+                <div class="grid"><input type="text" id="vettE" placeholder="N° Vettura"><input type="text" id="turnE" placeholder="N° Turno"></div>
+            </div>
+
+            <label>Note</label>
+            <textarea id="note" placeholder="Inserisci eventuali note..."></textarea>
+            <button class="btn-main" onclick="salva()">Salva Turno</button>
+        </section>
+    </main>
+
+    <main id="page-log" class="hidden">
+        <div id="stats-mensili" class="stats-card hidden">
+            <div class="stats-item" style="text-align: center; border:none; margin-bottom: 10px;">
+                <small>Totale Ore Mese</small><b id="tot-mese-gen" style="font-size: 1.5rem;">0h 0m</b>
+            </div>
+            <div class="stats-grid">
+                <div class="stats-item"><small>☀️ Diurne</small><b id="tot-mese-diurno">0h 0m</b></div>
+                <div class="stats-item"><small>🌙 Notturne (22-05)</small><b id="tot-mese-notte">0h 0m</b></div>
+                <div class="stats-item" style="grid-column: span 2; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 8px; margin-top: 5px;">
+                    <small>🚀 Totale Straordinari</small><b id="tot-mese-extra">0h 0m</b>
+                </div>
+            </div>
+            <div id="container-pillole" class="hidden"></div>
+        </div>
+
+        <div class="log-title-bar">
+            <h2>Ricerca</h2>
+            <button class="btn-reset-top" onclick="resetFiltri()">Reset</button>
+        </div>
+        <div style="margin-bottom: 20px;">
+            <label>Scegli il giorno</label>
+            <input type="date" id="filtro-data-unica" onchange="caricaTurni()">
+        </div>
+        <div id="lista-registro"><div class="empty-msg">Seleziona una data per visualizzare il turno corrispondente</div></div>
+    </main>
+
+    <main id="page-backup" class="hidden">
+        <section class="card">
+            <div class="backup-section">
+                <h3>Esporta Dati</h3>
+                <button class="btn-backup" onclick="esportaJSON()"><i>💾</i> Salva Backup (JSON)</button>
+                <button class="btn-backup" onclick="esportaCSV()"><i>📊</i> Scarica Tabella (CSV)</button>
+            </div>
+            <div class="backup-section" style="border-top: 1px solid var(--border); padding-top: 20px;">
+                <h3>Importa Dati</h3>
+                <button class="btn-backup" onclick="document.getElementById('input-import').click()"><i>📂</i> Carica file Backup</button>
+                <input type="file" id="input-import" class="hidden" accept=".json" onchange="importaJSON(event)">
+            </div>
+        </section>
+    </main>
+
+    <nav class="nav-bar">
+        <button class="nav-btn active" id="btn-nav-home" onclick="switchPage('home')">🚌 INSERISCI</button>
+        <button class="nav-btn" id="btn-nav-log" onclick="switchPage('log')">📋 REGISTRO</button>
+        <button class="nav-btn" id="btn-nav-backup" onclick="switchPage('backup')">⚙️ BACKUP</button>
+    </nav>
+</div>
+
+<script>
+    /* --- SEZIONE PWA: AUTO-GENERAZIONE MANIFEST E SERVICE WORKER --- */
+    const manifestData = {
+        "name": "Agenda Lavoro Autisti",
+        "short_name": "AgendaLavoro",
+        "start_url": ".",
+        "display": "standalone",
+        "background_color": "#F0F2F5",
+        "theme_color": "#1A73E8",
+        "icons": [{"src": "https://cdn-icons-png.flaticon.com/512/2830/2830312.png", "sizes": "512x512", "type": "image/png"}]
+    };
+    const manifestBlob = new Blob([JSON.stringify(manifestData)], {type: 'application/json'});
+    document.getElementById('manifest-link').setAttribute('href', URL.createObjectURL(manifestBlob));
+
+    const swCode = `
+        const CACHE = 'agenda-v1';
+        self.addEventListener('install', e => e.waitUntil(caches.open(CACHE).then(c => c.addAll(['./']))));
+        self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));
+    `;
+    const swBlob = new Blob([swCode], {type: 'application/javascript'});
+    const swUrl = URL.createObjectURL(swBlob);
+    if ('serviceWorker' in navigator) { navigator.serviceWorker.register(swUrl); }
+
+    /* --- LOGICA APPLICAZIONE --- */
+    let db;
+    const request = indexedDB.open("agenda_autisti_vPWA_Final", 1);
+    request.onupgradeneeded = e => {
+        let dbRef = e.target.result;
+        if (!dbRef.objectStoreNames.contains("turni")) dbRef.createObjectStore("turni", { keyPath: "data" });
+    };
+    request.onsuccess = e => { db = e.target.result; init(); };
+
+    function init() {
+        const oggi = new Date().toISOString().split('T')[0];
+        document.getElementById('data').value = oggi;
+        if (localStorage.getItem('theme') === 'dark') toggleDarkMode();
+        const savedDate = sessionStorage.getItem('lastSearchDate');
+        if (savedDate) { document.getElementById('filtro-data-unica').value = savedDate; }
+    }
+
+    // CALCOLO NOTTURNO PRECISO 22:00 - 05:00
+    function calcolaDettagli(inizio, fine) {
+        if (!inizio || !fine) return { totale: 0, notte: 0 };
+        let [hI, mI] = inizio.split(':').map(Number), [hF, mF] = fine.split(':').map(Number);
+        let corrente = hI * 60 + mI, arrivo = hF * 60 + mF;
+        if (arrivo <= corrente) arrivo += 1440; 
+        let totaleMinuti = arrivo - corrente, notteMinuti = 0;
+        for (let m = corrente; m < arrivo; m++) {
+            let minDelGiorno = m % 1440;
+            if (minDelGiorno >= 1320 || minDelGiorno < 300) notteMinuti++;
+        }
+        return { totale: totaleMinuti, notte: notteMinuti };
+    }
+
+    function formattaMinuti(m) { return Math.floor(m / 60) + "h " + (m % 60) + "m"; }
+
+    function switchPage(p) {
+        document.getElementById('page-home').classList.toggle('hidden', p !== 'home');
+        document.getElementById('page-log').classList.toggle('hidden', p !== 'log');
+        document.getElementById('page-backup').classList.toggle('hidden', p !== 'backup');
+        document.getElementById('btn-nav-home').classList.toggle('active', p === 'home');
+        document.getElementById('btn-nav-log').classList.toggle('active', p === 'log');
+        document.getElementById('btn-nav-backup').classList.toggle('active', p === 'backup');
+        if(p === 'log') { caricaTurni(); }
+    }
+
+    function toggleDarkMode() {
+        const isDark = document.body.classList.toggle('dark-mode');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    }
+
+    function checkTipo() {
+        const tipo = document.getElementById('tipo').value, l = document.getElementById('label-data-inizio');
+        document.getElementById('form-lavoro').classList.toggle('hidden', tipo !== 'Lavoro');
+        document.getElementById('box-date').classList.toggle('hidden', !tipo);
+        document.getElementById('box-data-fine').classList.toggle('hidden', tipo === 'Lavoro' || !tipo);
+        l.innerText = (tipo === 'Lavoro') ? "Data" : "Dal (Inizio)";
+    }
+
+    async function salva() {
+        const dataI = document.getElementById('data').value, dataF = document.getElementById('data_fine').value, tipo = document.getElementById('tipo').value;
+        if(!tipo) return alert("Seleziona il tipo di evento!");
+        if(!dataI) return alert("Data mancante!");
+        const tx = db.transaction("turni", "readwrite"), store = tx.objectStore("turni");
+        if (['Riposo','Ferie','Permesso','Malattia','104','Congedo','Altro'].includes(tipo) && dataF) {
+            let c = new Date(dataI), f = new Date(dataF);
+            while(c <= f) { store.put({ data: c.toISOString().split('T')[0], tipo: tipo, note: document.getElementById('note').value }); c.setDate(c.getDate() + 1); }
+        } else {
+            store.put({
+                data: dataI, tipo: tipo, categoria: document.getElementById('categoria').value,
+                i1: document.getElementById('i1').value, f1: document.getElementById('f1').value,
+                li1: document.getElementById('li1').value, lf1: document.getElementById('lf1').value,
+                vett1: document.getElementById('vett1').value, turn1: document.getElementById('turn1').value,
+                i2: document.getElementById('i2').value, f2: document.getElementById('f2').value,
+                li2: document.getElementById('li2').value, lf2: document.getElementById('lf2').value,
+                vett2: document.getElementById('vett2').value, turn2: document.getElementById('turn2').value,
+                ei: document.getElementById('ei').value, ef: document.getElementById('ef').value,
+                lei: document.getElementById('lei').value, lef: document.getElementById('lef').value,
+                vettE: document.getElementById('vettE').value, turnE: document.getElementById('turnE').value,
+                note: document.getElementById('note').value
+            });
+        }
+        tx.oncomplete = () => { alert("Salvato!"); pulisciInserimento(); switchPage('log'); };
+    }
+
+    function pulisciInserimento() {
+        document.getElementById('tipo').value = ""; document.getElementById('categoria').value = "";
+        document.getElementById('note').value = ""; document.getElementById('data_fine').value = "";
+        document.querySelectorAll('#page-home input').forEach(i => { if(i.id !== 'data') i.value = ""; });
+        checkTipo();
+    }
+
+    function caricaTurni() {
+        const container = document.getElementById('lista-registro'), dataFiltro = document.getElementById('filtro-data-unica').value, s = document.getElementById('stats-mensili');
+        if (!dataFiltro) { container.innerHTML = '<div class="empty-msg">Seleziona una data per visualizzare il turno corrispondente</div>'; s.classList.add('hidden'); return; }
+        sessionStorage.setItem('lastSearchDate', dataFiltro);
+        container.innerHTML = "";
+        db.transaction("turni").objectStore("turni").get(dataFiltro).onsuccess = e => {
+            const t = e.target.result;
+            if (t) {
+                const d1 = calcolaDettagli(t.i1, t.f1), d2 = calcolaDettagli(t.i2, t.f2), de = calcolaDettagli(t.ei, t.ef);
+                const totG = d1.totale + d2.totale + de.totale;
+                container.innerHTML = `<div class="log-item">
+                    <div class="log-header"><b>${t.data.split('-').reverse().join('/')}</b><span style="color:var(--primary); font-weight:800;">${t.tipo} ${totG > 0 ? `(${formattaMinuti(totG)})` : ''}</span></div>
+                    <div class="log-grid">
+                        ${t.i1 ? `<div class="log-part"><b>1ª PARTE ${t.turn1 || ''}</b><div class="log-time-badge">${formattaMinuti(d1.totale)}<br><small>🌙 ${formattaMinuti(d1.notte)}</small></div>Inizio: ${t.i1} - Fine: ${t.f1}<br>${t.li1 || ''} / ${t.lf1 || ''}</div>` : ''}
+                        ${t.i2 ? `<div class="log-part"><b>2ª PARTE ${t.turn2 || ''}</b><div class="log-time-badge">${formattaMinuti(d2.totale)}<br><small>🌙 ${formattaMinuti(d2.notte)}</small></div>Inizio: ${t.i2} - Fine: ${t.f2}<br>${t.li2 || ''} / ${t.lf2 || ''}</div>` : ''}
+                        ${t.ei ? `<div class="log-part" style="border-color:var(--accent);"><b>STRAORDINARIO ${t.turnE || ''}</b><div class="log-time-badge">${formattaMinuti(de.totale)}<br><small>🌙 ${formattaMinuti(de.notte)}</small></div>Inizio: ${t.ei} - Fine: ${t.ef}<br>${t.lei || ''} / ${t.lef || ''}</div>` : ''}
+                    </div>
+                    ${t.note ? `<div class="log-note"><b>Note:</b><br>${t.note}</div>` : ''}
+                    <div class="log-actions"><button class="btn-edit" onclick="modifica('${t.data}')">Modifica</button><button class="btn-del" onclick="elimina('${t.data}')">Elimina</button></div>
+                </div>`;
+            } else { container.innerHTML = '<div class="empty-msg">Nessun evento</div>'; }
+            aggiornaStatsMensili(dataFiltro.substring(0, 7));
+        };
+    }
+
+    function aggiornaStatsMensili(meseFiltro) {
+        const s = document.getElementById('stats-mensili'), pContainer = document.getElementById('container-pillole');
+        let mGen = 0, mNotte = 0, mExtra = 0, counts = {};
+        db.transaction("turni").objectStore("turni").openCursor().onsuccess = e => {
+            const cursor = e.target.result;
+            if (cursor) {
+                if (cursor.value.data.startsWith(meseFiltro)) {
+                    const t = cursor.value;
+                    if (t.tipo === 'Lavoro') {
+                        const d1 = calcolaDettagli(t.i1, t.f1), d2 = calcolaDettagli(t.i2, t.f2), de = calcolaDettagli(t.ei, t.ef);
+                        mGen += (d1.totale + d2.totale + de.totale); mNotte += (d1.notte + d2.notte + de.notte); mExtra += de.totale;
+                    } else { counts[t.tipo] = (counts[t.tipo] || 0) + 1; }
+                }
+                cursor.continue();
+            } else {
+                s.classList.remove('hidden');
+                document.getElementById('tot-mese-gen').innerText = formattaMinuti(mGen);
+                document.getElementById('tot-mese-diurno').innerText = formattaMinuti(mGen - mNotte);
+                document.getElementById('tot-mese-notte').innerText = formattaMinuti(mNotte);
+                document.getElementById('tot-mese-extra').innerText = formattaMinuti(mExtra);
+                pContainer.innerHTML = "";
+                const voci = ['Riposo','Ferie','Malattia','104','Permesso','Congedo','Altro'];
+                voci.forEach(v => {
+                    if (counts[v] > 0) {
+                        const p = document.createElement('div');
+                        p.className = `txt-stat txt-${v.toLowerCase()}`;
+                        p.innerText = `${v}: ${counts[v]}`;
+                        pContainer.appendChild(p);
+                    }
+                });
+                pContainer.classList.toggle('hidden', pContainer.children.length === 0);
+            }
+        };
+    }
+
+    function elimina(d) { if(confirm("Eliminare?")) db.transaction("turni", "readwrite").objectStore("turni").delete(d).onsuccess = () => caricaTurni(); }
+    
+    function modifica(d) {
+        db.transaction("turni").objectStore("turni").get(d).onsuccess = e => {
+            const t = e.target.result;
+            document.getElementById('data').value = t.data; document.getElementById('tipo').value = t.tipo;
+            document.getElementById('categoria').value = t.categoria || "";
+            ['i1','f1','li1','lf1','vett1','turn1','i2','f2','li2','lf2','vett2','turn2','ei','ef','lei','lef','vettE','turnE'].forEach(f => { document.getElementById(f).value = t[f] || ""; });
+            document.getElementById('note').value = t.note || ""; switchPage('home'); checkTipo();
+        };
+    }
+
+    function resetFiltri() { document.getElementById('filtro-data-unica').value = ""; caricaTurni(); }
+
+    function esportaJSON() {
+        db.transaction("turni").objectStore("turni").getAll().onsuccess = e => {
+            const data = JSON.stringify(e.target.result);
+            const blob = new Blob([data], {type: "application/json"});
+            const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "Backup.json"; a.click();
+        };
+    }
+
+    function esportaCSV() {
+        db.transaction("turni").objectStore("turni").getAll().onsuccess = e => {
+            let csv = "Data;Tipo;Totale;Diurne;Notturne;Straord\n";
+            e.target.result.forEach(t => {
+                let d1 = calcolaDettagli(t.i1, t.f1), d2 = calcolaDettagli(t.i2, t.f2), de = calcolaDettagli(t.ei, t.ef);
+                let tot = (d1.totale + d2.totale + de.totale);
+                csv += `${t.data};${t.tipo};${formattaMinuti(tot)};${formattaMinuti(tot-(d1.notte+d2.notte+de.notte))};${formattaMinuti(d1.notte+d2.notte+de.notte)};${formattaMinuti(de.totale)}\n`;
+            });
+            const blob = new Blob([csv], {type: "text/csv"});
+            const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "Registro.csv"; a.click();
+        };
+    }
+
+    function importaJSON(event) {
+        const reader = new FileReader();
+        reader.onload = async e => {
+            const data = JSON.parse(e.target.result);
+            const tx = db.transaction("turni", "readwrite");
+            const store = tx.objectStore("turni");
+            await store.clear();
+            data.forEach(t => store.put(t));
+            tx.oncomplete = () => location.reload();
+        };
+        reader.readAsText(event.target.files[0]);
+    }
+</script>
+</body>
+</html>
