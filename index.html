@@ -33,18 +33,17 @@
 
         body { 
             font-family: 'Inter', sans-serif; background: var(--bg); 
-            color: var(--text); margin: 0; padding: 0; padding-bottom: 80px;
+            color: var(--text); margin: 0; padding: 0; padding-bottom: 100px;
             display: flex; justify-content: center;
         }
 
         .app-container { width: 100%; max-width: var(--max-width); padding: 10px 15px; box-sizing: border-box; }
         
-        .header { display: flex; flex-direction: column; align-items: center; margin: 20px 0; }
+        /* Header compatto senza logo visivo */
+        .header { margin: 20px 0; }
         .header-top { width: 100%; display: flex; justify-content: space-between; align-items: center; }
         .header h1 { color: var(--primary); font-size: 1.4rem; margin: 0; font-weight: 800; }
         
-        .app-logo { width: 80px; height: 80px; border-radius: 18px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); object-fit: cover; }
-
         .theme-toggle {
             background: var(--card); border: 1px solid var(--border); cursor: pointer;
             width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
@@ -56,9 +55,21 @@
             border: 1px solid var(--border);
         }
 
-        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); display: flex; justify-content: space-around; padding: 15px; border-top: 1px solid var(--border); z-index: 100; }
-        .nav-btn { background: none; border: none; color: var(--text); opacity: 0.5; font-weight: 700; cursor: pointer; font-size: 0.8rem; font-family: inherit; }
-        .nav-btn.active { color: var(--primary); opacity: 1; }
+        .nav-bar { 
+            position: fixed; bottom: 0; left: 0; right: 0; 
+            background: var(--card); display: flex; justify-content: space-around; 
+            padding: 10px 5px 25px 5px; 
+            border-top: 1px solid var(--border); z-index: 100; 
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        }
+        .nav-btn { 
+            background: none; border: none; color: var(--text); opacity: 0.5; 
+            font-weight: 700; cursor: pointer; font-size: 0.9rem; 
+            font-family: inherit; flex: 1; height: 60px;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s;
+        }
+        .nav-btn.active { color: var(--primary); opacity: 1; font-size: 0.95rem; }
 
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .divider-pro { text-align: center; margin: 30px 0 20px; position: relative; display: flex; align-items: center; justify-content: center; }
@@ -111,7 +122,6 @@
 
 <div class="app-container">
     <header class="header">
-        <img src="logo.jpg" alt="Logo" class="app-logo">
         <div class="header-top">
             <h1 id="app-title">AgendaLavoro</h1>
             <button class="theme-toggle" onclick="toggleDarkMode()">💡</button>
@@ -231,7 +241,6 @@
 </div>
 
 <script>
-    /* --- CONFIGURAZIONE PWA --- */
     const manifestData = {
         "name": "Agenda Lavoro Autisti",
         "short_name": "AgendaLavoro",
@@ -244,7 +253,6 @@
     const manifestBlob = new Blob([JSON.stringify(manifestData)], {type: 'application/json'});
     document.getElementById('manifest-link').setAttribute('href', URL.createObjectURL(manifestBlob));
 
-    /* --- LOGICA DATABASE E CALCOLI --- */
     let db;
     const request = indexedDB.open("agenda_autisti_vPWA_Final", 1);
     request.onupgradeneeded = e => {
@@ -261,7 +269,6 @@
         if (savedDate) { document.getElementById('filtro-data-unica').value = savedDate; }
     }
 
-    // CALCOLO ORE NOTTURNE (22:00 - 05:00)
     function calcolaDettagli(inizio, fine) {
         if (!inizio || !fine) return { totale: 0, notte: 0 };
         let [hI, mI] = inizio.split(':').map(Number), [hF, mF] = fine.split(':').map(Number);
