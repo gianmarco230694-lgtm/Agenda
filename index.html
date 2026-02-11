@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>AgendaLavoro</title>
 
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icona.jpg">
-    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="AgendaLavoro">
+    <meta name="theme-color" content="#1A73E8">
     
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkFnZW5kYUxhdm9ybyIsCiAgInNob3J0X25hbWUiIjogIkFnZW5kYSIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjRjBGMkY1IiwKICAidGhlbWVfY29sb3IiIjogIiMxQTczRTgiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJodHRwczovL2Nkbi1pY29ucy1wbmcuZmxhdGljb24uY29tLzUxMi8yNjg1LzI2ODUwOTYucG5nIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIiwKICAgICAgInNpemVzIjogIjUxMng1MTIiCiAgICB9CiAgXQp9">
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -79,7 +79,7 @@
         .txt-permesso { color: var(--permesso); } .txt-congedo { color: var(--congedo); }
         .txt-altro { color: #6b7280; }
 
-        /* BOX DETTAGLIO (Log Item come prima) */
+        /* BOX DETTAGLIO */
         .log-item { background: var(--card); border-radius: 20px; padding: 18px; margin-bottom: 15px; border: 1px solid var(--border); animation: fadeIn 0.3s; }
         .log-header { display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
         .log-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
@@ -233,6 +233,23 @@
 </div>
 
 <script>
+    // --- SERVICE WORKER REGISTRATION (OFFLINE SUPPORT) ---
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            const swCode = `
+                const cacheName = 'agenda-v1';
+                self.addEventListener('install', e => {
+                    e.waitUntil(caches.open(cacheName).then(cache => cache.addAll(['./'])));
+                });
+                self.addEventListener('fetch', e => {
+                    e.respondWith(caches.match(e.request).then(res => res || fetch(e.request)));
+                });`;
+            const blob = new Blob([swCode], {type: 'text/javascript'});
+            const swUrl = URL.createObjectURL(blob);
+            navigator.serviceWorker.register(swUrl).catch(err => console.log("SW non registrato", err));
+        });
+    }
+
     let db;
     let currentViewDate = new Date();
     const request = indexedDB.open("agenda_autisti_vFinal_Cal", 1);
@@ -281,6 +298,7 @@
         let totaleMinuti = arrivo - corrente, notteMinuti = 0;
         for (let m = corrente; m < arrivo; m++) {
             let minDelGiorno = m % 1440;
+            // Fascia notturna aggiornata: dalle 22:00 (1320) alle 05:00 (300)
             if (minDelGiorno >= 1320 || minDelGiorno < 300) notteMinuti++;
         }
         return { totale: totaleMinuti, notte: notteMinuti };
@@ -291,6 +309,33 @@
     async function salva() {
         const dataI = document.getElementById('data').value, dataF = document.getElementById('data_fine').value, tipo = document.getElementById('tipo').value;
         if(!tipo || !dataI) return alert("Manca la data o il tipo!");
+
+        // --- NUOVA LOGICA DI VALIDAZIONE ---
+        if (tipo === 'Lavoro') {
+            const parti = [
+                { i: document.getElementById('i1').value, f: document.getElementById('f1').value, nome: '1ª Parte' },
+                { i: document.getElementById('i2').value, f: document.getElementById('f2').value, nome: '2ª Parte' },
+                { i: document.getElementById('ei').value, f: document.getElementById('ef').value, nome: 'Straordinario' }
+            ];
+
+            for (let p of parti) {
+                if (p.i && p.f) {
+                    let [hI, mI] = p.i.split(':').map(Number), [hF, mF] = p.f.split(':').map(Number);
+                    let mInizio = hI * 60 + mI, mFine = hF * 60 + mF;
+                    
+                    if (mFine < mInizio) {
+                        let durata = (mFine + 1440) - mInizio;
+                        // Se la durata supera le 14 ore, è un errore, non una notturna
+                        if (durata > 840) { 
+                            alert(`Errore nella ${p.nome}: orario smontata inferiore a orario montata.`);
+                            return; 
+                        }
+                    }
+                }
+            }
+        }
+        // --- FINE VALIDAZIONE ---
+
         const tx = db.transaction("turni", "readwrite"), store = tx.objectStore("turni");
         if (tipo !== 'Lavoro' && dataF) {
             let c = new Date(dataI), f = new Date(dataF);
