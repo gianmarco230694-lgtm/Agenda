@@ -1,0 +1,17 @@
+{
+  "name": "AgendaLavoro",
+  "short_name": "Agenda",
+  "description": "Gestione turni e orari di lavoro",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#F0F2F5",
+  "theme_color": "#1A73E8",
+  "icons": [
+    {
+      "src": "icon-gp.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
