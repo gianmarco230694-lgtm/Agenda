@@ -11,9 +11,9 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#1A73E8">
     
-    <link rel="apple-touch-icon" href="logo.png">
-    <link rel="icon" type="image/png" href="logo.png">
-    <link rel="apple-touch-startup-image" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.jpg">
+    <link rel="icon" type="image/jpeg" href="logo.jpg">
+    <link rel="apple-touch-startup-image" href="logo.jpg">
 
     <link id="manifest-link" rel="manifest">
     
@@ -43,7 +43,7 @@
         .header-top { width: 100%; display: flex; justify-content: space-between; align-items: center; }
         .header h1 { color: var(--primary); font-size: 1.4rem; margin: 0; font-weight: 800; }
         
-        .app-logo { width: 80px; height: 80px; border-radius: 18px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .app-logo { width: 80px; height: 80px; border-radius: 18px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); object-fit: cover; }
 
         .theme-toggle {
             background: var(--card); border: 1px solid var(--border); cursor: pointer;
@@ -111,7 +111,7 @@
 
 <div class="app-container">
     <header class="header">
-        <img src="logo.png" alt="Logo" class="app-logo">
+        <img src="logo.jpg" alt="Logo" class="app-logo">
         <div class="header-top">
             <h1 id="app-title">AgendaLavoro</h1>
             <button class="theme-toggle" onclick="toggleDarkMode()">💡</button>
@@ -239,21 +239,12 @@
         "display": "standalone",
         "background_color": "#1A73E8",
         "theme_color": "#1A73E8",
-        "icons": [{"src": "logo.png", "sizes": "512x512", "type": "image/png"}]
+        "icons": [{"src": "logo.jpg", "sizes": "512x512", "type": "image/jpeg"}]
     };
     const manifestBlob = new Blob([JSON.stringify(manifestData)], {type: 'application/json'});
     document.getElementById('manifest-link').setAttribute('href', URL.createObjectURL(manifestBlob));
 
-    const swCode = `
-        const CACHE = 'agenda-v2';
-        self.addEventListener('install', e => e.waitUntil(caches.open(CACHE).then(c => c.addAll(['./']))));
-        self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));
-    `;
-    const swBlob = new Blob([swCode], {type: 'application/javascript'});
-    const swUrl = URL.createObjectURL(swBlob);
-    if ('serviceWorker' in navigator) { navigator.serviceWorker.register(swUrl); }
-
-    /* --- LOGICA APPLICAZIONE --- */
+    /* --- LOGICA DATABASE E CALCOLI --- */
     let db;
     const request = indexedDB.open("agenda_autisti_vPWA_Final", 1);
     request.onupgradeneeded = e => {
@@ -270,6 +261,7 @@
         if (savedDate) { document.getElementById('filtro-data-unica').value = savedDate; }
     }
 
+    // CALCOLO ORE NOTTURNE (22:00 - 05:00)
     function calcolaDettagli(inizio, fine) {
         if (!inizio || !fine) return { totale: 0, notte: 0 };
         let [hI, mI] = inizio.split(':').map(Number), [hF, mF] = fine.split(':').map(Number);
