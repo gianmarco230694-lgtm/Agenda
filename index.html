@@ -9,11 +9,11 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="AgendaLavoro">
     <meta name="theme-color" content="#1A73E8">
-
-    <link rel="manifest" href="manifest.json">
+    
+   <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-gp.png">
 <link rel="icon" type="image/png" href="icon-gp.png">
-   
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -65,7 +65,7 @@
         }
         .cal-cell.selected { outline: 3px solid var(--primary); outline-offset: -3px; transform: scale(0.95); }
         
-        /* COLORI CALENDARIO & STATS (Piatte) */
+        /* COLORI CALENDARIO & STATS */
         .bg-lavoro { background-color: var(--primary) !important; color: white !important; border:none; }
         .bg-riposo { background-color: #86EFAC !important; color: #064e3b !important; border:none; }
         .bg-ferie { background-color: #FEF08A !important; color: #713f12 !important; border:none; }
@@ -75,7 +75,6 @@
         .bg-congedo { background-color: #BAE6FD !important; color: #0c4a6e !important; border:none; }
         .bg-altro { background-color: #F3F4F6 !important; color: #374151 !important; border:none; }
 
-        /* COLORI TESTO STATISTICHE */
         .txt-riposo { color: var(--riposo); } .txt-ferie { color: var(--ferie); }
         .txt-malattia { color: var(--malattia); } .txt-104 { color: var(--legge104); }
         .txt-permesso { color: var(--permesso); } .txt-congedo { color: var(--congedo); }
@@ -102,7 +101,7 @@
         .divider-pro::before { content: ""; position: absolute; width: 100%; height: 1px; background: var(--border); z-index: 1; }
 
         /* STATS PAGE */
-        .stat-big-card { background: var(--primary); color: white; padding: 30px 20px; border-radius: 28px; margin-bottom: 20px; text-align: center; box-shadow: 0 10px 20px rgba(26,115,232,0.2); }
+        .stat-big-card { background: var(--primary); color: white; padding: 30px 15px; border-radius: 28px; margin-bottom: 20px; text-align: center; box-shadow: 0 10px 20px rgba(26,115,232,0.2); }
         .stat-row { display: flex; justify-content: space-between; padding: 18px 0; border-bottom: 1px solid var(--border); font-size: 1rem; }
         .stat-row b { font-weight: 800; }
 
@@ -198,11 +197,12 @@
     <main id="page-stats" class="hidden">
         <div class="stat-big-card">
             <small style="text-transform:uppercase; font-weight:800; opacity:0.8; letter-spacing:1px;">Ore Totali Mese</small>
-            <h2 id="stat-tot-mese" style="font-size: 2.8rem; margin:15px 0; font-weight:800;">0h 0m</h2>
-            <div style="display:flex; justify-content: space-around; border-top: 1px solid rgba(255,255,255,0.2); padding-top:20px; margin-top:10px;">
-                <div><small>☀️ Diurne</small><br><b id="stat-diurno" style="font-size:1.2rem;">0h</b></div>
-                <div><small>🌙 Notte</small><br><b id="stat-notte" style="font-size:1.2rem;">0h</b></div>
-                <div><small>🚀 Extra</small><br><b id="stat-extra" style="font-size:1.2rem;">0h</b></div>
+            <h2 id="stat-tot-mese" style="font-size: 2.5rem; margin:15px 0; font-weight:800;">0h 0m</h2>
+            <div style="display:grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid rgba(255,255,255,0.2); padding-top:20px; margin-top:10px; gap: 5px;">
+                <div><small>☀️ Diurne</small><br><b id="stat-diurno" style="font-size:0.9rem;">0h</b></div>
+                <div><small>🌙 Notte</small><br><b id="stat-notte" style="font-size:0.9rem;">0h</b></div>
+                <div><small>🚀 Straord.</small><br><b id="stat-extra" style="font-size:0.9rem;">0h</b></div>
+                <div><small>☕️ Nastri</small><br><b id="stat-nastri" style="font-size:0.9rem;">0</b></div>
             </div>
         </div>
 
@@ -235,7 +235,6 @@
 </div>
 
 <script>
-    // --- SERVICE WORKER REGISTRATION (OFFLINE SUPPORT) ---
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             const swCode = `
@@ -300,7 +299,6 @@
         let totaleMinuti = arrivo - corrente, notteMinuti = 0;
         for (let m = corrente; m < arrivo; m++) {
             let minDelGiorno = m % 1440;
-            // Fascia notturna aggiornata: dalle 22:00 (1320) alle 05:00 (300)
             if (minDelGiorno >= 1320 || minDelGiorno < 300) notteMinuti++;
         }
         return { totale: totaleMinuti, notte: notteMinuti };
@@ -312,22 +310,18 @@
         const dataI = document.getElementById('data').value, dataF = document.getElementById('data_fine').value, tipo = document.getElementById('tipo').value;
         if(!tipo || !dataI) return alert("Manca la data o il tipo!");
 
-        // --- NUOVA LOGICA DI VALIDAZIONE ---
         if (tipo === 'Lavoro') {
             const parti = [
                 { i: document.getElementById('i1').value, f: document.getElementById('f1').value, nome: '1ª Parte' },
                 { i: document.getElementById('i2').value, f: document.getElementById('f2').value, nome: '2ª Parte' },
                 { i: document.getElementById('ei').value, f: document.getElementById('ef').value, nome: 'Straordinario' }
             ];
-
             for (let p of parti) {
                 if (p.i && p.f) {
                     let [hI, mI] = p.i.split(':').map(Number), [hF, mF] = p.f.split(':').map(Number);
                     let mInizio = hI * 60 + mI, mFine = hF * 60 + mF;
-                    
                     if (mFine < mInizio) {
                         let durata = (mFine + 1440) - mInizio;
-                        // Se la durata supera le 14 ore, è un errore, non una notturna
                         if (durata > 840) { 
                             alert(`Errore nella ${p.nome}: orario smontata inferiore a orario montata.`);
                             return; 
@@ -336,7 +330,6 @@
                 }
             }
         }
-        // --- FINE VALIDAZIONE ---
 
         const tx = db.transaction("turni", "readwrite"), store = tx.objectStore("turni");
         if (tipo !== 'Lavoro' && dataF) {
@@ -432,7 +425,7 @@
 
     function caricaStatistiche() {
         const meseMesso = `${currentViewDate.getFullYear()}-${String(currentViewDate.getMonth()+1).padStart(2,'0')}`;
-        let mGen = 0, mNotte = 0, mExtra = 0, counts = {};
+        let mGen = 0, mNotte = 0, mExtra = 0, nNastri = 0, counts = {};
         db.transaction("turni").objectStore("turni").openCursor().onsuccess = e => {
             const cursor = e.target.result;
             if (cursor) {
@@ -441,6 +434,14 @@
                     if (t.tipo === 'Lavoro') {
                         const d1 = calcolaDettagli(t.i1, t.f1), d2 = calcolaDettagli(t.i2, t.f2), de = calcolaDettagli(t.ei, t.ef);
                         mGen += (d1.totale + d2.totale + de.totale); mNotte += (d1.notte + d2.notte + de.notte); mExtra += de.totale;
+                        
+                        // LOGICA NASTRI: Se c'è Fine1 e Inizio2
+                        if(t.f1 && t.i2) {
+                            let [hF1, mF1] = t.f1.split(':').map(Number), [hI2, mI2] = t.i2.split(':').map(Number);
+                            let fine1 = hF1 * 60 + mF1, inizio2 = hI2 * 60 + mI2;
+                            if (inizio2 <= fine1) inizio2 += 1440;
+                            if ((inizio2 - fine1) >= 60) nNastri++;
+                        }
                     } else counts[t.tipo] = (counts[t.tipo] || 0) + 1;
                 }
                 cursor.continue();
@@ -449,6 +450,8 @@
                 document.getElementById('stat-diurno').innerText = formattaMinuti(mGen - mNotte);
                 document.getElementById('stat-notte').innerText = formattaMinuti(mNotte);
                 document.getElementById('stat-extra').innerText = formattaMinuti(mExtra);
+                document.getElementById('stat-nastri').innerText = nNastri;
+                
                 const list = document.getElementById('lista-stat-eventi'); list.innerHTML = "";
                 ['Riposo','Ferie','Malattia','104','Permesso','Congedo','Altro'].forEach(v => {
                     if (counts[v]) list.innerHTML += `<div class="stat-row"><b class="txt-${v.toLowerCase().replace('104','104')}">${v}</b><b>${counts[v]} gg</b></div>`;
@@ -505,8 +508,4 @@
 </script>
 </body>
 </html>
-
-
-
-
 
