@@ -10,11 +10,10 @@
     <meta name="apple-mobile-web-app-title" content="AgendaLavoro">
     <meta name="theme-color" content="#1A73E8">
     
-   <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-gp.png">
-<link rel="icon" type="image/png" href="icon-gp.png">
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkFnZW5kYUxhdm9ybyIsCiAgInNob3J0X25hbWUiIjogIkFnZW5kYSIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjRjBGMkY1IiwKICAidGhlbWVfY29sb3IiIjogIiMxQTczRTgiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJodHRwczovL2Nkbi1pY29ucy1wbmcuZmxhdGljb24uY29tLzUxMi8yNjg1LzI2ODUwOTYucG5nIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIiwKICAgICAgInNpemVzIjogIjUxMng1MTIiCiAgICB9CiAgXQp9">
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,500&display=swap" rel="stylesheet">
+
     <style>
         :root {
             --bg: #F0F2F5; --card: #ffffff; --primary: #1A73E8; 
@@ -23,6 +22,8 @@
             --success: #22C55E; 
             --riposo: #16a34a; --ferie: #ca8a04; --malattia: #dc2626; 
             --legge104: #2563eb; --permesso: #9333ea; --congedo: #0891b2;
+            --lp: #f97316; --sciopero: #000000;
+            --bordeaux: #800020;
         }
 
         body.dark-mode {
@@ -38,7 +39,10 @@
 
         .app-container { width: 100%; max-width: var(--max-width); padding: 10px 15px; box-sizing: border-box; }
         
-        /* NAV BAR 4 TASTI */
+        .brand-section { display: flex; flex-direction: column; }
+        .brand-title { color: var(--primary); font-size: 1.8rem; font-weight: 800; margin: 0; letter-spacing: -1px; line-height: 1; }
+        .brand-subtitle { font-family: 'Playfair Display', serif; font-style: italic; font-size: 0.8rem; letter-spacing: 3.5px; color: var(--text); opacity: 0.7; margin-top: 8px; padding-top: 5px; border-top: 1px solid var(--border); display: inline-block; width: fit-content; }
+
         .nav-bar { 
             position: fixed; bottom: 0; left: 0; right: 0; 
             background: var(--card); display: flex; justify-content: space-around; 
@@ -54,18 +58,31 @@
         .nav-btn.active { color: var(--primary); opacity: 1; }
         .nav-btn i { font-style: normal; font-size: 1.5rem; margin-bottom: 4px; }
 
-        /* CALENDARIO */
-        .cal-header { display: flex; justify-content: space-between; align-items: center; margin: 15px 0; }
-        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 20px; }
+        .cal-header { display: flex; justify-content: center; align-items: center; margin: 15px 0; }
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 20px; touch-action: pan-y; }
         .cal-day-name { text-align: center; font-size: 0.65rem; font-weight: 800; opacity: 0.5; text-transform: uppercase; }
+        
         .cal-cell { 
             aspect-ratio: 1; background: var(--card); border: 1px solid var(--border); 
             border-radius: 12px; display: flex; align-items: center; justify-content: center; 
             font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: 0.2s;
+            box-sizing: border-box; color: var(--text);
         }
-        .cal-cell.selected { outline: 3px solid var(--primary); outline-offset: -3px; transform: scale(0.95); }
         
-        /* COLORI CALENDARIO & STATS */
+        /* Stile Festivi con Halo Bianco per leggibilità su scuro */
+        .is-festivo { 
+            color: var(--bordeaux) !important; 
+            text-shadow: 
+                -1px -1px 0 #fff,  1px -1px 0 #fff,
+                -1px  1px 0 #fff,  1px  1px 0 #fff,
+                 0px  0px 4px rgba(255,255,255,0.8);
+            font-weight: 900;
+        }
+
+        .cal-cell.selected { outline: 3px solid var(--primary); outline-offset: -3px; transform: scale(0.95); }
+        .is-today { border: 2px solid #000000 !important; box-shadow: 0 0 5px rgba(0,0,0,0.2); }
+        body.dark-mode .is-today { border-color: #ffffff !important; }
+
         .bg-lavoro { background-color: var(--primary) !important; color: white !important; border:none; }
         .bg-riposo { background-color: #86EFAC !important; color: #064e3b !important; border:none; }
         .bg-ferie { background-color: #FEF08A !important; color: #713f12 !important; border:none; }
@@ -73,14 +90,10 @@
         .bg-104 { background-color: #BFDBFE !important; color: #1e3a8a !important; border:none; }
         .bg-permesso { background-color: #E9D5FF !important; color: #581c87 !important; border:none; }
         .bg-congedo { background-color: #BAE6FD !important; color: #0c4a6e !important; border:none; }
+        .bg-lp { background-color: #fed7aa !important; color: #9a3412 !important; border:none; }
+        .bg-sciopero { background-color: var(--sciopero) !important; color: white !important; border:none; }
         .bg-altro { background-color: #F3F4F6 !important; color: #374151 !important; border:none; }
 
-        .txt-riposo { color: var(--riposo); } .txt-ferie { color: var(--ferie); }
-        .txt-malattia { color: var(--malattia); } .txt-104 { color: var(--legge104); }
-        .txt-permesso { color: var(--permesso); } .txt-congedo { color: var(--congedo); }
-        .txt-altro { color: #6b7280; }
-
-        /* BOX DETTAGLIO */
         .log-item { background: var(--card); border-radius: 20px; padding: 18px; margin-bottom: 15px; border: 1px solid var(--border); animation: fadeIn 0.3s; }
         .log-header { display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
         .log-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
@@ -89,7 +102,6 @@
         .log-time-badge { position: absolute; top: 12px; right: 12px; font-size: 0.7rem; font-weight: 800; color: var(--primary); background: rgba(26, 115, 232, 0.1); padding: 2px 6px; border-radius: 6px; text-align: right; }
         .log-note { font-size: 0.85rem; margin-top: 12px; font-style: italic; opacity: 0.9; background: var(--bg); padding: 10px; border-radius: 10px; border: 1px dashed var(--border); white-space: pre-wrap; }
 
-        /* FORM INSERIMENTO */
         .card { background: var(--card); padding: 22px; border-radius: 24px; border: 1px solid var(--border); margin-bottom: 20px; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         label { font-size: 0.7rem; font-weight: 700; opacity: 0.5; text-transform: uppercase; margin-bottom: 6px; display: block; }
@@ -100,7 +112,6 @@
         .divider-pro span { background: var(--bg); color: var(--primary); padding: 4px 12px; border-radius: 50px; font-size: 0.7rem; font-weight: 800; z-index: 2; border: 1px solid var(--border); }
         .divider-pro::before { content: ""; position: absolute; width: 100%; height: 1px; background: var(--border); z-index: 1; }
 
-        /* STATS PAGE */
         .stat-big-card { background: var(--primary); color: white; padding: 30px 15px; border-radius: 28px; margin-bottom: 20px; text-align: center; box-shadow: 0 10px 20px rgba(26,115,232,0.2); }
         .stat-row { display: flex; justify-content: space-between; padding: 18px 0; border-bottom: 1px solid var(--border); font-size: 1rem; }
         .stat-row b { font-weight: 800; }
@@ -113,9 +124,12 @@
 <body>
 
 <div class="app-container">
-    <header style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0 20px;">
-        <h1 style="color: var(--primary); font-size: 1.4rem; font-weight: 800; margin: 0;">AgendaLavoro</h1>
-        <button onclick="toggleDarkMode()" style="background:var(--card); border:1px solid var(--border); padding:8px 12px; border-radius:12px; cursor:pointer;">💡</button>
+    <header style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px;">
+        <div class="brand-section">
+            <h1 class="brand-title">AgendaLavoro</h1>
+            <span class="brand-subtitle">Designed by Petrelli</span>
+        </div>
+        <button onclick="toggleDarkMode()" style="background:var(--card); border:1px solid var(--border); padding:8px 12px; border-radius:12px; cursor:pointer; margin-top: 5px;">💡</button>
     </header>
 
     <main id="page-home">
@@ -130,6 +144,8 @@
                 <option value="Malattia">Malattia</option>
                 <option value="104">104</option>
                 <option value="Congedo">Congedo</option>
+                <option value="Lp">Lp</option>
+                <option value="Sciopero">Sciopero</option>
                 <option value="Altro">Altro</option>
             </select>
 
@@ -184,13 +200,9 @@
 
     <main id="page-log" class="hidden">
         <div class="cal-header">
-            <button onclick="changeMonth(-1)" class="btn-main" style="width:50px; padding:10px; margin:0;">◀</button>
             <h2 id="cal-month-title" style="margin:0; text-transform: uppercase; font-size:1.1rem; font-weight:800;">Mese Anno</h2>
-            <button onclick="changeMonth(1)" class="btn-main" style="width:50px; padding:10px; margin:0;">▶</button>
         </div>
-        
         <div class="cal-grid" id="calendar-grid"></div>
-
         <div id="dettaglio-giorno" class="hidden"></div>
     </main>
 
@@ -205,7 +217,6 @@
                 <div><small>☕️ Nastri</small><br><b id="stat-nastri" style="font-size:0.9rem;">0</b></div>
             </div>
         </div>
-
         <div class="card">
             <h3 style="margin-top:0; font-size:0.8rem; text-transform:uppercase; color:var(--primary); letter-spacing:1px; margin-bottom:15px;">Riepilogo Altri Eventi</h3>
             <div id="lista-stat-eventi"></div>
@@ -214,11 +225,9 @@
 
     <main id="page-backup" class="hidden">
         <section class="card">
-            <h3 style="margin-top:0; color:var(--primary); text-transform:uppercase; font-size:0.9rem;">Esportazione</h3>
+            <h3 style="margin-top:0; color:var(--primary); text-transform:uppercase; font-size:0.9rem;">Gestione Dati</h3>
             <button class="btn-main" style="background:var(--bg); color:var(--text); border:1px solid var(--border); margin-bottom:12px; text-align:left;" onclick="esportaCSV(false)">📊 Scarica Tutto il Registro (CSV)</button>
-            <button class="btn-main" style="background:var(--bg); color:var(--text); border:1px solid var(--border); margin-bottom:12px; text-align:left;" onclick="esportaCSV(true)">📅 Scarica Mese Corrente (CSV)</button>
             <button class="btn-main" style="background:var(--bg); color:var(--text); border:1px solid var(--border); margin-bottom:12px; text-align:left;" onclick="esportaJSON()">💾 Salva Backup Completo (JSON)</button>
-            
             <div style="margin-top:25px; border-top:1px solid var(--border); padding-top:25px;">
                 <label>Importa Dati</label>
                 <input type="file" id="input-import" accept=".json" onchange="importaJSON(event)">
@@ -235,22 +244,6 @@
 </div>
 
 <script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            const swCode = `
-                const cacheName = 'agenda-v1';
-                self.addEventListener('install', e => {
-                    e.waitUntil(caches.open(cacheName).then(cache => cache.addAll(['./'])));
-                });
-                self.addEventListener('fetch', e => {
-                    e.respondWith(caches.match(e.request).then(res => res || fetch(e.request)));
-                });`;
-            const blob = new Blob([swCode], {type: 'text/javascript'});
-            const swUrl = URL.createObjectURL(blob);
-            navigator.serviceWorker.register(swUrl).catch(err => console.log("SW non registrato", err));
-        });
-    }
-
     let db;
     let currentViewDate = new Date();
     const request = indexedDB.open("agenda_autisti_vFinal_Cal", 1);
@@ -266,6 +259,7 @@
         document.getElementById('data').value = new Date().toISOString().split('T')[0];
         if (localStorage.getItem('theme') === 'dark') toggleDarkMode();
         renderCalendar();
+        initSwipe();
     }
 
     function toggleDarkMode() {
@@ -286,9 +280,34 @@
 
     function checkTipo() {
         const tipo = document.getElementById('tipo').value;
+        const workTypes = ['Lavoro'];
+        const rangeTypes = ['Riposo','Ferie','Malattia','104','Permesso','Congedo','Lp','Sciopero','Altro'];
+        
         document.getElementById('form-lavoro').classList.toggle('hidden', tipo !== 'Lavoro');
         document.getElementById('box-date').classList.toggle('hidden', !tipo);
         document.getElementById('box-data-fine').classList.toggle('hidden', tipo === 'Lavoro' || !tipo);
+    }
+
+    function getPasqua(anno) {
+        let a = anno % 19, b = Math.floor(anno / 100), c = anno % 100,
+            d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25),
+            g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30,
+            i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7,
+            m = Math.floor((a + 11 * h + 22 * l) / 451),
+            mese = Math.floor((h + l - 7 * m + 114) / 31),
+            giorno = ((h + l - 7 * m + 114) % 31) + 1;
+        return { giorno, mese: mese - 1 };
+    }
+
+    function isFestivo(d, m, y) {
+        const fissi = ["1-0", "6-0", "25-3", "1-4", "26-4", "2-5", "29-5", "15-7", "1-10", "8-11", "25-11", "26-11"];
+        if (fissi.includes(`${d}-${m}`)) return true;
+        const p = getPasqua(y);
+        const pasqua = new Date(y, p.mese, p.giorno);
+        const pasquetta = new Date(y, p.mese, p.giorno + 1);
+        if (d === pasqua.getDate() && m === pasqua.getMonth()) return true;
+        if (d === pasquetta.getDate() && m === pasquetta.getMonth()) return true;
+        return false;
     }
 
     function calcolaDettagli(inizio, fine) {
@@ -310,25 +329,24 @@
         const dataI = document.getElementById('data').value, dataF = document.getElementById('data_fine').value, tipo = document.getElementById('tipo').value;
         if(!tipo || !dataI) return alert("Manca la data o il tipo!");
 
-        if (tipo === 'Lavoro') {
-            const parti = [
-                { i: document.getElementById('i1').value, f: document.getElementById('f1').value, nome: '1ª Parte' },
-                { i: document.getElementById('i2').value, f: document.getElementById('f2').value, nome: '2ª Parte' },
-                { i: document.getElementById('ei').value, f: document.getElementById('ef').value, nome: 'Straordinario' }
-            ];
-            for (let p of parti) {
-                if (p.i && p.f) {
-                    let [hI, mI] = p.i.split(':').map(Number), [hF, mF] = p.f.split(':').map(Number);
-                    let mInizio = hI * 60 + mI, mFine = hF * 60 + mF;
-                    if (mFine < mInizio) {
-                        let durata = (mFine + 1440) - mInizio;
-                        if (durata > 840) { 
-                            alert(`Errore nella ${p.nome}: orario smontata inferiore a orario montata.`);
-                            return; 
-                        }
-                    }
-                }
+        // --- VALIDAZIONE Lavoro ---
+        if(tipo === 'Lavoro') {
+            const i1 = document.getElementById('i1').value;
+            const f1 = document.getElementById('f1').value;
+            const i2 = document.getElementById('i2').value;
+            const f2 = document.getElementById('f2').value;
+            const ei = document.getElementById('ei').value;
+            const ef = document.getElementById('ef').value;
+
+            // Obbligatorietà 1ª Parte
+            if(!i1 || !f1) {
+                alert("Per il tipo Lavoro è obbligatorio inserire data, inizio e fine della 1ª parte.");
+                if(!i1) document.getElementById('i1').focus(); else document.getElementById('f1').focus();
+                return;
             }
+            // Avviso Attenzione turni incompleti
+            if((i2 && !f2) || (!i2 && f2)) { alert("Attenzione⚠️ manca ora d’inizio o fine della 2ª parte."); return; }
+            if((ei && !ef) || (!ei && ef)) { alert("Attenzione⚠️ manca ora d’inizio o fine dello Straordinario."); return; }
         }
 
         const tx = db.transaction("turni", "readwrite"), store = tx.objectStore("turni");
@@ -360,10 +378,23 @@
 
     function changeMonth(dir) { currentViewDate.setMonth(currentViewDate.getMonth() + dir); renderCalendar(); }
 
+    function initSwipe() {
+        let startX = 0;
+        const grid = document.getElementById('calendar-grid');
+        grid.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, {passive: true});
+        grid.addEventListener('touchend', e => {
+            let endX = e.changedTouches[0].clientX;
+            let diff = startX - endX;
+            if (Math.abs(diff) > 50) { if (diff > 0) changeMonth(1); else changeMonth(-1); }
+        }, {passive: true});
+    }
+
     async function renderCalendar() {
         const grid = document.getElementById('calendar-grid'), title = document.getElementById('cal-month-title');
         document.getElementById('dettaglio-giorno').classList.add('hidden');
         grid.innerHTML = "";
+        const today = new Date();
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
         const year = currentViewDate.getFullYear(), month = currentViewDate.getMonth();
         title.innerText = new Intl.DateTimeFormat('it-IT', { month: 'long', year: 'numeric' }).format(currentViewDate);
         ['Lun','Mar','Mer','Gio','Ven','Sab','Dom'].forEach(d => {
@@ -382,10 +413,15 @@
                 for (let i = 0; i < shift; i++) grid.appendChild(document.createElement('div'));
                 for (let d = 1; d <= giorniNelMese; d++) {
                     const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                    const cell = document.createElement('div'); cell.className = "cal-cell"; cell.innerText = d;
+                    const cell = document.createElement('div'); 
+                    cell.className = "cal-cell"; cell.innerText = d;
+                    
+                    if (isFestivo(d, month, year)) cell.classList.add('is-festivo');
+                    if (dateStr === todayStr) cell.classList.add('is-today');
+                    
                     if(allData[dateStr]) {
                         const t = allData[dateStr].tipo;
-                        cell.classList.add(t === 'Lavoro' ? 'bg-lavoro' : 'bg-'+t.toLowerCase().replace('104','104'));
+                        cell.classList.add('bg-' + t.toLowerCase());
                     }
                     cell.onclick = () => {
                         document.querySelectorAll('.cal-cell').forEach(c => c.classList.remove('selected'));
@@ -402,12 +438,17 @@
     function mostraDettagli(t) {
         const area = document.getElementById('dettaglio-giorno');
         area.classList.remove('hidden');
+        const dt = new Date(t.data);
+        const fest = isFestivo(dt.getDate(), dt.getMonth(), dt.getFullYear());
+        const labelTipo = (t.tipo === 'Lavoro' && fest) ? "Lavoro (Festivo)" : t.tipo;
+        
         const d1 = calcolaDettagli(t.i1, t.f1), d2 = calcolaDettagli(t.i2, t.f2), de = calcolaDettagli(t.ei, t.ef);
         const tot = d1.totale + d2.totale + de.totale;
+        
         area.innerHTML = `
             <div class="log-item">
                 <div class="log-header">
-                    <b style="color:var(--primary); font-size:1.1rem;">${t.tipo}</b>
+                    <b style="color:var(--primary); font-size:1.1rem;">${labelTipo}</b>
                     <span style="font-weight:800; color:var(--primary)">${tot > 0 ? formattaMinuti(tot) : ''}</span>
                 </div>
                 <div class="log-grid">
@@ -425,17 +466,19 @@
 
     function caricaStatistiche() {
         const meseMesso = `${currentViewDate.getFullYear()}-${String(currentViewDate.getMonth()+1).padStart(2,'0')}`;
-        let mGen = 0, mNotte = 0, mExtra = 0, nNastri = 0, counts = {};
+        let mGen = 0, mNotte = 0, mExtra = 0, nNastri = 0, festiviLavorati = 0, counts = {};
         db.transaction("turni").objectStore("turni").openCursor().onsuccess = e => {
             const cursor = e.target.result;
             if (cursor) {
                 if (cursor.value.data.startsWith(meseMesso)) {
                     const t = cursor.value;
+                    const dt = new Date(t.data);
+                    const fest = isFestivo(dt.getDate(), dt.getMonth(), dt.getFullYear());
+                    
                     if (t.tipo === 'Lavoro') {
+                        if(fest) festiviLavorati++;
                         const d1 = calcolaDettagli(t.i1, t.f1), d2 = calcolaDettagli(t.i2, t.f2), de = calcolaDettagli(t.ei, t.ef);
                         mGen += (d1.totale + d2.totale + de.totale); mNotte += (d1.notte + d2.notte + de.notte); mExtra += de.totale;
-                        
-                        // LOGICA NASTRI: Se c'è Fine1 e Inizio2
                         if(t.f1 && t.i2) {
                             let [hF1, mF1] = t.f1.split(':').map(Number), [hI2, mI2] = t.i2.split(':').map(Number);
                             let fine1 = hF1 * 60 + mF1, inizio2 = hI2 * 60 + mI2;
@@ -451,10 +494,15 @@
                 document.getElementById('stat-notte').innerText = formattaMinuti(mNotte);
                 document.getElementById('stat-extra').innerText = formattaMinuti(mExtra);
                 document.getElementById('stat-nastri').innerText = nNastri;
-                
                 const list = document.getElementById('lista-stat-eventi'); list.innerHTML = "";
-                ['Riposo','Ferie','Malattia','104','Permesso','Congedo','Altro'].forEach(v => {
-                    if (counts[v]) list.innerHTML += `<div class="stat-row"><b class="txt-${v.toLowerCase().replace('104','104')}">${v}</b><b>${counts[v]} gg</b></div>`;
+                
+                if(festiviLavorati > 0) list.innerHTML += `<div class="stat-row"><b style="color:var(--bordeaux)">Festivi Lavorati</b><b>${festiviLavorati}</b></div>`;
+                
+                ['Riposo','Ferie','Malattia','104','Permesso','Congedo','Lp','Sciopero','Altro'].forEach(v => {
+                    if (counts[v]) {
+                        // Rimuoviamo "gg" come richiesto
+                        list.innerHTML += `<div class="stat-row"><b>${v}</b><b>${counts[v]}</b></div>`;
+                    }
                 });
                 if(!list.innerHTML) list.innerHTML = "<div class='empty-msg'>Nessun evento extra</div>";
             }
@@ -474,18 +522,15 @@
     }
 
     function esportaCSV(soloMese) {
-        const meseFiltro = `${currentViewDate.getFullYear()}-${String(currentViewDate.getMonth()+1).padStart(2,'0')}`;
         db.transaction("turni").objectStore("turni").getAll().onsuccess = e => {
             let csv = "Data;Tipo;Totale;Diurne;Notturne;Straord;Note\n";
             e.target.result.forEach(t => {
-                if (!soloMese || t.data.startsWith(meseFiltro)) {
-                    let d1 = calcolaDettagli(t.i1, t.f1), d2 = calcolaDettagli(t.i2, t.f2), de = calcolaDettagli(t.ei, t.ef);
-                    let tot = (d1.totale + d2.totale + de.totale), notte = (d1.notte + d2.notte + de.notte);
-                    csv += `${t.data};${t.tipo};${formattaMinuti(tot)};${formattaMinuti(tot-notte)};${formattaMinuti(notte)};${formattaMinuti(de.totale)};${(t.note||'').replace(/;/g,',')}\n`;
-                }
+                let d1 = calcolaDettagli(t.i1, t.f1), d2 = calcolaDettagli(t.i2, t.f2), de = calcolaDettagli(t.ei, t.ef);
+                let tot = (d1.totale + d2.totale + de.totale), notte = (d1.notte + d2.notte + de.notte);
+                csv += `${t.data};${t.tipo};${formattaMinuti(tot)};${formattaMinuti(tot-notte)};${formattaMinuti(notte)};${formattaMinuti(de.totale)};${(t.note||'').replace(/;/g,',')}\n`;
             });
             const blob = new Blob([csv], {type: "text/csv"}), a = document.createElement("a");
-            a.href = URL.createObjectURL(blob); a.download = soloMese ? `Mese_${meseFiltro}.csv` : "Registro_Completo.csv"; a.click();
+            a.href = URL.createObjectURL(blob); a.download = "Registro_Completo.csv"; a.click();
         };
     }
 
@@ -508,4 +553,3 @@
 </script>
 </body>
 </html>
-
