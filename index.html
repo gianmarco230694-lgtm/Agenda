@@ -10,9 +10,9 @@
     <meta name="apple-mobile-web-app-title" content="AgendaLavoro">
     <meta name="theme-color" content="#1A73E8">
     
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-gp.png">
-<link rel="icon" type="image/png" href="icon-gp.png">
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkFnZW5kYUxhdm9ybyIsCiAgInNob3J0X25hbWUiIjogIkFnZW5kYSIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjRjBGMkY1IiwKICAidGhlbWVfY29sb3IiIjogIiMxQTczRTgiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJodHRwczovL2Nkbi1pY29ucy1wbmcuZmxhdGljb24uY29tLzUxMi8yNjg1LzI2ODUwOTYucG5nIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIiwKICAgICAgInNpemVzIjogIjUxMng1MTIiCiAgICB9CiAgXQp9">
+
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:italic,wght@0,600;1,400&family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
 
     <style>
         :root {
@@ -32,17 +32,43 @@
         }
 
         body { 
-            font-family: 'Inter', sans-serif; background: var(--bg); 
-            color: var(--text); margin: 0; padding-bottom: 110px;
-            display: flex; justify-content: center;
+            font-family: 'Montserrat', sans-serif; 
+            background: var(--bg); 
+            color: var(--text); 
+            margin: 0; 
+            padding-bottom: 110px;
+            display: flex; 
+            justify-content: center;
+            -webkit-font-smoothing: antialiased;
         }
 
         .app-container { width: 100%; max-width: var(--max-width); padding: 10px 15px; box-sizing: border-box; }
         
+        /* HEADER & BRANDING */
         .brand-section { display: flex; flex-direction: column; }
-        .brand-title { color: var(--primary); font-size: 1.8rem; font-weight: 800; margin: 0; letter-spacing: -1px; line-height: 1; }
-        .brand-subtitle { font-family: 'Playfair Display', serif; font-style: italic; font-size: 0.8rem; letter-spacing: 3.5px; color: var(--text); opacity: 0.7; margin-top: 8px; padding-top: 5px; border-top: 1px solid var(--border); display: inline-block; width: fit-content; }
+        .brand-title { 
+            color: var(--primary); 
+            font-size: 1.6rem; 
+            font-weight: 800; 
+            margin: 0; 
+            letter-spacing: -0.5px; 
+            font-variant: small-caps;
+        }
+        .brand-subtitle { 
+            font-family: 'Crimson Pro', serif; 
+            font-style: italic; 
+            font-size: 0.9rem; 
+            letter-spacing: 1.2px; 
+            color: var(--text); 
+            opacity: 0.6; 
+            margin-top: 4px; 
+            padding-top: 5px; 
+            border-top: 1px solid var(--border); 
+            display: inline-block; 
+            width: fit-content; 
+        }
 
+        /* NAVIGATION */
         .nav-bar { 
             position: fixed; bottom: 0; left: 0; right: 0; 
             background: var(--card); display: flex; justify-content: space-around; 
@@ -51,38 +77,44 @@
         }
         .nav-btn { 
             background: none; border: none; color: var(--text); opacity: 0.5; 
-            font-weight: 700; cursor: pointer; font-size: 0.7rem; 
+            font-weight: 600; cursor: pointer; font-size: 0.65rem; 
             flex: 1; height: 65px; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            text-transform: uppercase;
+            text-transform: uppercase; letter-spacing: 0.5px;
         }
         .nav-btn.active { color: var(--primary); opacity: 1; }
         .nav-btn i { font-style: normal; font-size: 1.5rem; margin-bottom: 4px; }
 
+        /* CALENDARIO */
         .cal-header { display: flex; justify-content: center; align-items: center; margin: 15px 0; }
+        #cal-month-title {
+            font-family: 'Crimson Pro', serif;
+            font-style: italic;
+            font-size: 1.4rem;
+            font-weight: 600;
+            text-transform: capitalize;
+            color: var(--text);
+        }
         .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 20px; touch-action: pan-y; }
-        .cal-day-name { text-align: center; font-size: 0.65rem; font-weight: 800; opacity: 0.5; text-transform: uppercase; }
+        .cal-day-name { text-align: center; font-size: 0.6rem; font-weight: 800; opacity: 0.4; text-transform: uppercase; letter-spacing: 1px; }
         
         .cal-cell { 
             aspect-ratio: 1; background: var(--card); border: 1px solid var(--border); 
             border-radius: 12px; display: flex; align-items: center; justify-content: center; 
-            font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: 0.2s;
+            font-weight: 500; font-size: 0.95rem; cursor: pointer; transition: 0.2s;
             box-sizing: border-box; color: var(--text);
         }
         
-        /* Stile Festivi con Halo Bianco per leggibilità su scuro */
         .is-festivo { 
             color: var(--bordeaux) !important; 
-            text-shadow: 
-                -1px -1px 0 #fff,  1px -1px 0 #fff,
-                -1px  1px 0 #fff,  1px  1px 0 #fff,
-                 0px  0px 4px rgba(255,255,255,0.8);
-            font-weight: 900;
+            text-shadow: 0px 0px 1px rgba(128,0,32,0.2);
+            font-weight: 800;
         }
 
         .cal-cell.selected { outline: 3px solid var(--primary); outline-offset: -3px; transform: scale(0.95); }
-        .is-today { border: 2px solid #000000 !important; box-shadow: 0 0 5px rgba(0,0,0,0.2); }
+        .is-today { border: 2px solid #000000 !important; }
         body.dark-mode .is-today { border-color: #ffffff !important; }
 
+        /* COLORI STATI */
         .bg-lavoro { background-color: var(--primary) !important; color: white !important; border:none; }
         .bg-riposo { background-color: #86EFAC !important; color: #064e3b !important; border:none; }
         .bg-ferie { background-color: #FEF08A !important; color: #713f12 !important; border:none; }
@@ -94,31 +126,44 @@
         .bg-sciopero { background-color: var(--sciopero) !important; color: white !important; border:none; }
         .bg-altro { background-color: #F3F4F6 !important; color: #374151 !important; border:none; }
 
-        .log-item { background: var(--card); border-radius: 20px; padding: 18px; margin-bottom: 15px; border: 1px solid var(--border); animation: fadeIn 0.3s; }
-        .log-header { display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
-        .log-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
-        .log-part { background: var(--bg); padding: 12px; border-radius: 12px; border: 1px solid var(--border); font-size: 1rem; position: relative; }
-        .log-part b { color: var(--primary); display: block; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 4px; }
-        .log-time-badge { position: absolute; top: 12px; right: 12px; font-size: 0.7rem; font-weight: 800; color: var(--primary); background: rgba(26, 115, 232, 0.1); padding: 2px 6px; border-radius: 6px; text-align: right; }
-        .log-note { font-size: 0.85rem; margin-top: 12px; font-style: italic; opacity: 0.9; background: var(--bg); padding: 10px; border-radius: 10px; border: 1px dashed var(--border); white-space: pre-wrap; }
+        /* STATISTICHE COLORI */
+        .color-riposo { color: #16a34a !important; }
+        .color-ferie { color: #b48a04 !important; }
+        .color-malattia { color: #dc2626 !important; }
+        .color-104 { color: #2563eb !important; }
+        .color-permesso { color: #9333ea !important; }
+        .color-congedo { color: #0891b2 !important; }
+        .color-lp { color: #ea580c !important; }
+        .color-sciopero { color: #000000 !important; }
+        body.dark-mode .color-sciopero { color: #ffffff !important; }
 
+        /* UI ELEMENTS */
         .card { background: var(--card); padding: 22px; border-radius: 24px; border: 1px solid var(--border); margin-bottom: 20px; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        label { font-size: 0.7rem; font-weight: 700; opacity: 0.5; text-transform: uppercase; margin-bottom: 6px; display: block; }
+        label { font-size: 0.65rem; font-weight: 700; opacity: 0.5; text-transform: uppercase; margin-bottom: 8px; display: block; letter-spacing: 1px; }
         input, select, textarea { width: 100%; min-height: 50px; padding: 12px; margin-bottom: 15px; border: 1px solid var(--border); border-radius: 14px; background: var(--bg); color: var(--text); font-family: inherit; box-sizing: border-box; font-size: 1rem; }
-        .btn-main { background: var(--primary); color: white; width: 100%; padding: 18px; border: none; border-radius: 16px; font-weight: 800; font-size: 1rem; cursor: pointer; text-transform: uppercase; }
+        .btn-main { background: var(--primary); color: white; width: 100%; padding: 18px; border: none; border-radius: 16px; font-weight: 700; font-size: 0.9rem; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
         
         .divider-pro { text-align: center; margin: 25px 0 15px; position: relative; display: flex; align-items: center; justify-content: center; }
-        .divider-pro span { background: var(--bg); color: var(--primary); padding: 4px 12px; border-radius: 50px; font-size: 0.7rem; font-weight: 800; z-index: 2; border: 1px solid var(--border); }
+        .divider-pro span { background: var(--bg); color: var(--primary); padding: 4px 12px; border-radius: 50px; font-size: 0.65rem; font-weight: 800; z-index: 2; border: 1px solid var(--border); text-transform: uppercase; }
         .divider-pro::before { content: ""; position: absolute; width: 100%; height: 1px; background: var(--border); z-index: 1; }
 
         .stat-big-card { background: var(--primary); color: white; padding: 30px 15px; border-radius: 28px; margin-bottom: 20px; text-align: center; box-shadow: 0 10px 20px rgba(26,115,232,0.2); }
         .stat-row { display: flex; justify-content: space-between; padding: 18px 0; border-bottom: 1px solid var(--border); font-size: 1rem; }
-        .stat-row b { font-weight: 800; }
+        .stat-row b { font-weight: 700; }
+
+        .hr-divider { border: 0; border-top: 1px solid var(--border); margin: 25px 0; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .hidden { display: none !important; }
-        .empty-msg { text-align: center; padding: 40px; opacity: 0.5; font-style: italic; }
+        
+        .log-item { background: var(--card); border-radius: 20px; padding: 18px; margin-bottom: 15px; border: 1px solid var(--border); animation: fadeIn 0.3s; }
+        .log-header { display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+        .log-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        .log-part { background: var(--bg); padding: 12px; border-radius: 12px; border: 1px solid var(--border); font-size: 0.95rem; position: relative; }
+        .log-part b { color: var(--primary); display: block; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px; }
+        .log-time-badge { position: absolute; top: 12px; right: 12px; font-size: 0.7rem; font-weight: 800; color: var(--primary); background: rgba(26, 115, 232, 0.1); padding: 2px 6px; border-radius: 6px; text-align: right; }
+        .log-note { font-size: 0.85rem; margin-top: 12px; font-style: italic; opacity: 0.9; background: var(--bg); padding: 10px; border-radius: 10px; border: 1px dashed var(--border); white-space: pre-wrap; font-family: 'Crimson Pro', serif; }
     </style>
 </head>
 <body>
@@ -126,8 +171,8 @@
 <div class="app-container">
     <header style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px;">
         <div class="brand-section">
-            <h1 class="brand-title">AgendaLavoro</h1>
-            <span class="brand-subtitle">Designed by Petrelli</span>
+            <h1 class="brand-title">Agenda.Lavoro</h1>
+            <span class="brand-subtitle">designed by Petrelli</span>
         </div>
         <button onclick="toggleDarkMode()" style="background:var(--card); border:1px solid var(--border); padding:8px 12px; border-radius:12px; cursor:pointer; margin-top: 5px;">💡</button>
     </header>
@@ -200,7 +245,7 @@
 
     <main id="page-log" class="hidden">
         <div class="cal-header">
-            <h2 id="cal-month-title" style="margin:0; text-transform: uppercase; font-size:1.1rem; font-weight:800;">Mese Anno</h2>
+            <h2 id="cal-month-title">Mese Anno</h2>
         </div>
         <div class="cal-grid" id="calendar-grid"></div>
         <div id="dettaglio-giorno" class="hidden"></div>
@@ -208,27 +253,31 @@
 
     <main id="page-stats" class="hidden">
         <div class="stat-big-card">
-            <small style="text-transform:uppercase; font-weight:800; opacity:0.8; letter-spacing:1px;">Ore Totali Mese</small>
-            <h2 id="stat-tot-mese" style="font-size: 2.5rem; margin:15px 0; font-weight:800;">0h 0m</h2>
+            <small style="text-transform:uppercase; font-weight:800; opacity:0.8; letter-spacing:1px; font-size: 0.65rem;">Ore Totali Mese</small>
+            <h2 id="stat-tot-mese" style="font-size: 2.5rem; margin:15px 0; font-weight:800; letter-spacing: -1px;">0h 0m</h2>
             <div style="display:grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid rgba(255,255,255,0.2); padding-top:20px; margin-top:10px; gap: 5px;">
-                <div><small>☀️ Diurne</small><br><b id="stat-diurno" style="font-size:0.9rem;">0h</b></div>
-                <div><small>🌙 Notte</small><br><b id="stat-notte" style="font-size:0.9rem;">0h</b></div>
-                <div><small>🚀 Straord.</small><br><b id="stat-extra" style="font-size:0.9rem;">0h</b></div>
-                <div><small>☕️ Nastri</small><br><b id="stat-nastri" style="font-size:0.9rem;">0</b></div>
+                <div><small style="font-size: 0.6rem; opacity: 0.9;">☀️ DIURNE</small><br><b id="stat-diurno" style="font-size:0.85rem;">0h</b></div>
+                <div><small style="font-size: 0.6rem; opacity: 0.9;">🌙 NOTTE</small><br><b id="stat-notte" style="font-size:0.85rem;">0h</b></div>
+                <div><small style="font-size: 0.6rem; opacity: 0.9;">🚀 STRAO.</small><br><b id="stat-extra" style="font-size:0.85rem;">0h</b></div>
+                <div><small style="font-size: 0.6rem; opacity: 0.9;">☕️ NASTRI</small><br><b id="stat-nastri" style="font-size:0.85rem;">0</b></div>
             </div>
         </div>
         <div class="card">
-            <h3 style="margin-top:0; font-size:0.8rem; text-transform:uppercase; color:var(--primary); letter-spacing:1px; margin-bottom:15px;">Riepilogo Altri Eventi</h3>
+            <h3 style="margin-top:0; font-size:0.75rem; text-transform:uppercase; color:var(--primary); letter-spacing:1px; margin-bottom:15px; font-weight: 800;">Riepilogo Altri Eventi</h3>
             <div id="lista-stat-eventi"></div>
         </div>
     </main>
 
     <main id="page-backup" class="hidden">
         <section class="card">
-            <h3 style="margin-top:0; color:var(--primary); text-transform:uppercase; font-size:0.9rem;">Gestione Dati</h3>
-            <button class="btn-main" style="background:var(--bg); color:var(--text); border:1px solid var(--border); margin-bottom:12px; text-align:left;" onclick="esportaCSV(false)">📊 Scarica Tutto il Registro (CSV)</button>
-            <button class="btn-main" style="background:var(--bg); color:var(--text); border:1px solid var(--border); margin-bottom:12px; text-align:left;" onclick="esportaJSON()">💾 Salva Backup Completo (JSON)</button>
-            <div style="margin-top:25px; border-top:1px solid var(--border); padding-top:25px;">
+            <button class="btn-main" style="background:var(--bg); color:var(--text); border:1px solid var(--border); margin-bottom:12px; text-align:left; text-transform:none; font-weight: 600;" onclick="esportaCSV('mese')">📅 Scarica Mese Corrente (CSV)</button>
+            <button class="btn-main" style="background:var(--bg); color:var(--text); border:1px solid var(--border); margin-bottom:12px; text-align:left; text-transform:none; font-weight: 600;" onclick="esportaCSV('anno')">🗓️ Scarica Anno Corrente (CSV)</button>
+            <button class="btn-main" style="background:var(--bg); color:var(--text); border:1px solid var(--border); margin-bottom:12px; text-align:left; text-transform:none; font-weight: 600;" onclick="esportaCSV('tutto')">📊 Scarica Tutto il Registro (CSV)</button>
+            
+            <hr class="hr-divider">
+
+            <button class="btn-main" style="background:var(--bg); color:var(--text); border:1px solid var(--border); margin-bottom:12px; text-align:left; text-transform:none; font-weight: 600;" onclick="esportaJSON()">💾 Salva Backup Completo (JSON)</button>
+            <div style="margin-top:10px;">
                 <label>Importa Dati</label>
                 <input type="file" id="input-import" accept=".json" onchange="importaJSON(event)">
             </div>
@@ -280,9 +329,6 @@
 
     function checkTipo() {
         const tipo = document.getElementById('tipo').value;
-        const workTypes = ['Lavoro'];
-        const rangeTypes = ['Riposo','Ferie','Malattia','104','Permesso','Congedo','Lp','Sciopero','Altro'];
-        
         document.getElementById('form-lavoro').classList.toggle('hidden', tipo !== 'Lavoro');
         document.getElementById('box-date').classList.toggle('hidden', !tipo);
         document.getElementById('box-data-fine').classList.toggle('hidden', tipo === 'Lavoro' || !tipo);
@@ -327,24 +373,13 @@
 
     async function salva() {
         const dataI = document.getElementById('data').value, dataF = document.getElementById('data_fine').value, tipo = document.getElementById('tipo').value;
-        if(!tipo || !dataI) return alert("Manca la data o il tipo!");
+        if(!tipo || !dataI) return alert("Attenzione⚠️ manca il tipo di evento !");
 
-        // --- VALIDAZIONE Lavoro ---
         if(tipo === 'Lavoro') {
-            const i1 = document.getElementById('i1').value;
-            const f1 = document.getElementById('f1').value;
-            const i2 = document.getElementById('i2').value;
-            const f2 = document.getElementById('f2').value;
-            const ei = document.getElementById('ei').value;
-            const ef = document.getElementById('ef').value;
-
-            // Obbligatorietà 1ª Parte
-            if(!i1 || !f1) {
-                alert("Per il tipo Lavoro è obbligatorio inserire data, inizio e fine della 1ª parte.");
-                if(!i1) document.getElementById('i1').focus(); else document.getElementById('f1').focus();
-                return;
-            }
-            // Avviso Attenzione turni incompleti
+            const i1 = document.getElementById('i1').value, f1 = document.getElementById('f1').value;
+            const i2 = document.getElementById('i2').value, f2 = document.getElementById('f2').value;
+            const ei = document.getElementById('ei').value, ef = document.getElementById('ef').value;
+            if(!i1 || !f1) { alert("Attenzione⚠️ inserire data, inizio e fine."); return; }
             if((i2 && !f2) || (!i2 && f2)) { alert("Attenzione⚠️ manca ora d’inizio o fine della 2ª parte."); return; }
             if((ei && !ef) || (!ei && ef)) { alert("Attenzione⚠️ manca ora d’inizio o fine dello Straordinario."); return; }
         }
@@ -415,14 +450,9 @@
                     const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
                     const cell = document.createElement('div'); 
                     cell.className = "cal-cell"; cell.innerText = d;
-                    
                     if (isFestivo(d, month, year)) cell.classList.add('is-festivo');
                     if (dateStr === todayStr) cell.classList.add('is-today');
-                    
-                    if(allData[dateStr]) {
-                        const t = allData[dateStr].tipo;
-                        cell.classList.add('bg-' + t.toLowerCase());
-                    }
+                    if(allData[dateStr]) cell.classList.add('bg-' + allData[dateStr].tipo.toLowerCase());
                     cell.onclick = () => {
                         document.querySelectorAll('.cal-cell').forEach(c => c.classList.remove('selected'));
                         cell.classList.add('selected');
@@ -440,15 +470,18 @@
         area.classList.remove('hidden');
         const dt = new Date(t.data);
         const fest = isFestivo(dt.getDate(), dt.getMonth(), dt.getFullYear());
-        const labelTipo = (t.tipo === 'Lavoro' && fest) ? "Lavoro (Festivo)" : t.tipo;
         
+        let labelLavoro = (t.tipo === 'Lavoro' && fest) ? "Lavoro (Festivo)" : t.tipo;
+        if (t.tipo === 'Lavoro' && t.categoria) {
+            labelLavoro += ` - ${t.categoria}`;
+        }
+
         const d1 = calcolaDettagli(t.i1, t.f1), d2 = calcolaDettagli(t.i2, t.f2), de = calcolaDettagli(t.ei, t.ef);
         const tot = d1.totale + d2.totale + de.totale;
-        
         area.innerHTML = `
             <div class="log-item">
                 <div class="log-header">
-                    <b style="color:var(--primary); font-size:1.1rem;">${labelTipo}</b>
+                    <b style="color:var(--primary); font-size:1.1rem; font-variant:small-caps;">${labelLavoro}</b>
                     <span style="font-weight:800; color:var(--primary)">${tot > 0 ? formattaMinuti(tot) : ''}</span>
                 </div>
                 <div class="log-grid">
@@ -471,14 +504,12 @@
             const cursor = e.target.result;
             if (cursor) {
                 if (cursor.value.data.startsWith(meseMesso)) {
-                    const t = cursor.value;
-                    const dt = new Date(t.data);
-                    const fest = isFestivo(dt.getDate(), dt.getMonth(), dt.getFullYear());
-                    
+                    const t = cursor.value, dt = new Date(t.data), fest = isFestivo(dt.getDate(), dt.getMonth(), dt.getFullYear());
                     if (t.tipo === 'Lavoro') {
                         if(fest) festiviLavorati++;
                         const d1 = calcolaDettagli(t.i1, t.f1), d2 = calcolaDettagli(t.i2, t.f2), de = calcolaDettagli(t.ei, t.ef);
                         mGen += (d1.totale + d2.totale + de.totale); mNotte += (d1.notte + d2.notte + de.notte); mExtra += de.totale;
+                        
                         if(t.f1 && t.i2) {
                             let [hF1, mF1] = t.f1.split(':').map(Number), [hI2, mI2] = t.i2.split(':').map(Number);
                             let fine1 = hF1 * 60 + mF1, inizio2 = hI2 * 60 + mI2;
@@ -494,23 +525,31 @@
                 document.getElementById('stat-notte').innerText = formattaMinuti(mNotte);
                 document.getElementById('stat-extra').innerText = formattaMinuti(mExtra);
                 document.getElementById('stat-nastri').innerText = nNastri;
-                const list = document.getElementById('lista-stat-eventi'); list.innerHTML = "";
                 
+                const list = document.getElementById('lista-stat-eventi'); list.innerHTML = "";
                 if(festiviLavorati > 0) list.innerHTML += `<div class="stat-row"><b style="color:var(--bordeaux)">Festivi Lavorati</b><b>${festiviLavorati}</b></div>`;
                 
-                ['Riposo','Ferie','Malattia','104','Permesso','Congedo','Lp','Sciopero','Altro'].forEach(v => {
-                    if (counts[v]) {
-                        // Rimuoviamo "gg" come richiesto
-                        list.innerHTML += `<div class="stat-row"><b>${v}</b><b>${counts[v]}</b></div>`;
+                const eventiSemplici = [
+                    {nome: 'Riposo', classe: 'color-riposo'},
+                    {nome: 'Ferie', classe: 'color-ferie'},
+                    {nome: 'Malattia', classe: 'color-malattia'},
+                    {nome: '104', classe: 'color-104'},
+                    {nome: 'Permesso', classe: 'color-permesso'},
+                    {nome: 'Congedo', classe: 'color-congedo'},
+                    {nome: 'Lp', classe: 'color-lp'},
+                    {nome: 'Sciopero', classe: 'color-sciopero'},
+                    {nome: 'Altro', classe: ''}
+                ];
+
+                eventiSemplici.forEach(ev => {
+                    if (counts[ev.nome]) {
+                        list.innerHTML += `<div class="stat-row"><b class="${ev.classe}">${ev.nome}</b><b>${counts[ev.nome]}</b></div>`;
                     }
                 });
-                if(!list.innerHTML) list.innerHTML = "<div class='empty-msg'>Nessun evento extra</div>";
             }
         };
     }
 
-    function eliminaTurno(d) { if(confirm("Eliminare?")) db.transaction("turni", "readwrite").objectStore("turni").delete(d).onsuccess = () => renderCalendar(); }
-    
     function modificaTurno(d) {
         db.transaction("turni").objectStore("turni").get(d).onsuccess = e => {
             const t = e.target.result;
@@ -521,23 +560,34 @@
         };
     }
 
-    function esportaCSV(soloMese) {
+    function eliminaTurno(d) { if(confirm("Eliminare?")) db.transaction("turni", "readwrite").objectStore("turni").delete(d).onsuccess = () => renderCalendar(); }
+
+    function esportaCSV(filtro) {
+        const meseMesso = `${currentViewDate.getFullYear()}-${String(currentViewDate.getMonth()+1).padStart(2,'0')}`;
+        const annoMesso = `${currentViewDate.getFullYear()}`;
         db.transaction("turni").objectStore("turni").getAll().onsuccess = e => {
             let csv = "Data;Tipo;Totale;Diurne;Notturne;Straord;Note\n";
             e.target.result.forEach(t => {
-                let d1 = calcolaDettagli(t.i1, t.f1), d2 = calcolaDettagli(t.i2, t.f2), de = calcolaDettagli(t.ei, t.ef);
-                let tot = (d1.totale + d2.totale + de.totale), notte = (d1.notte + d2.notte + de.notte);
-                csv += `${t.data};${t.tipo};${formattaMinuti(tot)};${formattaMinuti(tot-notte)};${formattaMinuti(notte)};${formattaMinuti(de.totale)};${(t.note||'').replace(/;/g,',')}\n`;
+                let includi = false;
+                if(filtro === 'tutto') includi = true;
+                else if(filtro === 'mese' && t.data.startsWith(meseMesso)) includi = true;
+                else if(filtro === 'anno' && t.data.startsWith(annoMesso)) includi = true;
+                
+                if(includi) {
+                    let d1 = calcolaDettagli(t.i1, t.f1), d2 = calcolaDettagli(t.i2, t.f2), de = calcolaDettagli(t.ei, t.ef);
+                    let tot = (d1.totale + d2.totale + de.totale), notte = (d1.notte + d2.notte + de.notte);
+                    csv += `${t.data};${t.tipo};${formattaMinuti(tot)};${formattaMinuti(tot-notte)};${formattaMinuti(notte)};${formattaMinuti(de.totale)};${(t.note||'').replace(/;/g,',')}\n`;
+                }
             });
             const blob = new Blob([csv], {type: "text/csv"}), a = document.createElement("a");
-            a.href = URL.createObjectURL(blob); a.download = "Registro_Completo.csv"; a.click();
+            a.href = URL.createObjectURL(blob); a.download = `Registro_${filtro}_${new Date().getTime()}.csv`; a.click();
         };
     }
 
     function esportaJSON() {
         db.transaction("turni").objectStore("turni").getAll().onsuccess = e => {
             const blob = new Blob([JSON.stringify(e.target.result)], {type: "application/json"}), a = document.createElement("a");
-            a.href = URL.createObjectURL(blob); a.download = "Backup_Agenda.json"; a.click();
+            a.href = URL.createObjectURL(blob); a.download = "Backup_Agenda_Completo.json"; a.click();
         };
     }
 
@@ -553,4 +603,3 @@
 </script>
 </body>
 </html>
-
