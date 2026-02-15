@@ -2,8 +2,8 @@ const CACHE_NAME = 'agenda-v1';
 const ASSETS = [
   './',
   './index.html',
-  'https://fonts.googleapis.com/css2?family=Crimson+Pro:italic,wght@0,600;1,400&family=Montserrat:wght@300;400;600;800&display=swap'
-]; // <--- Assicurati che qui sopra ci sia la virgola dopo l'URL!
+  'https://fonts.googleapis.com/css2?family=Crimson+Pro:italic,wght@0,600;1,400&family=Montserrat:wght@300;400;600;800&display=swap',
+]; 
 
 self.addEventListener('install', (e) => {
   e.waitUntil(
