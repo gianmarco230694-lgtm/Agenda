@@ -293,6 +293,13 @@
 </div>
 
 <script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js') // Cerca il file sw.js nella stessa cartella
+                .then(reg => console.log('Offline pronto'))
+                .catch(err => console.log('Errore offline', err));
+        });
+    }
     let db;
     let currentViewDate = new Date();
     const request = indexedDB.open("agenda_autisti_vFinal_Cal", 1);
@@ -603,6 +610,7 @@
 </script>
 </body>
 </html>
+
 
 
 
