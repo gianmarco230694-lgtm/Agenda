@@ -491,83 +491,95 @@ store.put({
         }, {passive: true});
     }
 
+  // RIGA 494: Inizio della funzione
     async function renderCalendar() {
         const grid = document.getElementById('calendar-grid'), title = document.getElementById('cal-month-title');
         document.getElementById('dettaglio-giorno').classList.add('hidden');
         grid.innerHTML = "";
-        const today = new Date();
-        const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
         const year = currentViewDate.getFullYear(), month = currentViewDate.getMonth();
         title.innerText = new Intl.DateTimeFormat('it-IT', { month: 'long', year: 'numeric' }).format(currentViewDate);
+        
         ['Lun','Mar','Mer','Gio','Ven','Sab','Dom'].forEach(d => {
             const div = document.createElement('div'); div.className = "cal-day-name"; div.innerText = d; grid.appendChild(div);
         });
+
         const primoGiorno = new Date(year, month, 1).getDay();
         const shift = primoGiorno === 0 ? 6 : primoGiorno - 1;
         const giorniNelMese = new Date(year, month + 1, 0).getDate();
+        
         const tx = db.transaction("turni"), store = tx.objectStore("turni"), allData = {};
+        
         store.openCursor().onsuccess = e => {
             const cursor = e.target.result;
             if (cursor) {
-                if (cursor.value.data.startsWith(`${year}-${String(month+1).padStart(2,'0')}`)) allData[cursor.value.data] = cursor.value;
+                if (cursor.value.data.startsWith(`${year}-${String(month+1).padStart(2,'0')}`)) {
+                    allData[cursor.value.data] = cursor.value;
+                }
                 cursor.continue();
             } else {
+                // Spazi vuoti iniziali
                 for (let i = 0; i < shift; i++) grid.appendChild(document.createElement('div'));
+                
+                // Ciclo per ogni giorno del mese
                 for (let d = 1; d <= giorniNelMese; d++) {
                     const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
                     const cell = document.createElement('div'); 
-                    cell.className = "cal-cell"; cell.innerText = d;
+                    cell.className = "cal-cell"; 
+                    cell.innerText = d;
+                    
                     if (isFestivo(d, month, year)) cell.classList.add('is-festivo');
-                   if (allData[dateStr]) {
-          const t = allData[dateStr];
-          // Punto 5: Gestione bicolore per sciopero
-          if (t.tipo === 'Lavoro' && t.is_sciopero) {
-              cell.classList.add('misto-lavoro-sciopero');
-          } else {
-              cell.classList.add('bg-' + t.tipo.toLowerCase());
-          }
-      }
+                    
+                    // Applica colori
+                    if (allData[dateStr]) {
+                        const t = allData[dateStr];
+                        if (t.tipo === 'Lavoro' && t.is_sciopero) {
+                            cell.classList.add('misto-lavoro-sciopero');
+                        } else {
+                            cell.classList.add('bg-' + t.tipo.toLowerCase());
+                        }
+                    }
 
-      // Il click e l'aggiunta alla griglia devono stare QUI (dentro il for)
-      cell.onclick = () => {
-          document.querySelectorAll('.cal-cell').forEach(c => c.classList.remove('selected'));
-          cell.classList.add('selected');
-          if (!allData[dateStr]) {
-              document.getElementById('data').value = dateStr;
-              switchPage('home');
-          } else {
-              mostraDettagli(allData[dateStr]);
-          }
-      };
-      grid.appendChild(cell);
-    } // Questa chiude il ciclo for dei giorni (d d=1...)
+                    // Gestione del click
+                    cell.onclick = () => {
+                        document.querySelectorAll('.cal-cell').forEach(c => c.classList.remove('selected'));
+                        cell.classList.add('selected');
+                        if (!allData[dateStr]) {
+                            document.getElementById('data').value = dateStr;
+                            switchPage('home');
+                        } else {
+                            mostraDettagli(allData[dateStr]);
+                        }
+                    };
+                    grid.appendChild(cell);
+                } 
 
-    // --- PUNTO 6: CALCOLO STATISTICHE SCIOPERO ---
-    let ggS = 0; let minS = 0;
-    Object.values(allData).forEach(t => {
-        if (t.is_sciopero) {
-            ggS++;
-            if (t.ore_perse) {
-                const [h, m] = t.ore_perse.split(':').map(Number);
-                minS += (h * 60) + m;
+                // Riepilogo Sciopero (sotto il calendario)
+                let ggS = 0; let minS = 0;
+                Object.values(allData).forEach(t => {
+                    if (t.is_sciopero) {
+                        ggS++;
+                        if (t.ore_perse) {
+                            const [h, m] = t.ore_perse.split(':').map(Number);
+                            minS += (h * 60) + m;
+                        }
+                    }
+                });
+
+                const hTot = Math.floor(minS / 60);
+                const mTot = minS % 60;
+
+                let statDiv = document.getElementById('stat-sciopero');
+                if(!statDiv) {
+                    statDiv = document.createElement('div');
+                    statDiv.id = 'stat-sciopero';
+                    statDiv.style.cssText = "color:red; font-weight:bold; margin:15px; text-align:center; border:1px solid red; padding:10px; border-radius:8px; background:#fff5f5;";
+                    grid.parentNode.insertBefore(statDiv, grid.nextSibling);
+                }
+                statDiv.innerText = `Riepilogo Sciopero: ${ggS} gg / ${hTot}h ${mTot}m perse`;
             }
-        }
-    });
-    const hTot = Math.floor(minS / 60);
-    const mTot = minS % 60;
-
-    // Crea o aggiorna il box rosso dei totali sotto il calendario
-    let statDiv = document.getElementById('stat-sciopero');
-    if(!statDiv) {
-        statDiv = document.createElement('div');
-        statDiv.id = 'stat-sciopero';
-        statDiv.style.cssText = "color:red; font-weight:bold; margin:15px; text-align:center; border:1px solid red; padding:10px; border-radius:8px; background:#fff5f5;";
-        grid.parentNode.insertBefore(statDiv, grid.nextSibling);
+        };
     }
-    statDiv.innerText = `Riepilogo Sciopero: ${ggS} gg / ${hTot}h ${mTot}m perse`;
-  }; 
-}
-
+    // DOPO QUESTO DEVE ESSERCI: function mostraDettagli(t) { ...
     function mostraDettagli(t) {
         const area = document.getElementById('dettaglio-giorno');
         area.classList.remove('hidden');
@@ -706,6 +718,7 @@ store.put({
 </script>
 </body>
 </html>
+
 
 
 
