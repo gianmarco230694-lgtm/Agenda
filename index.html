@@ -16,12 +16,12 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:italic,wght@0,600;1,400&family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
-       /* Ingrandisce le note nel dettaglio del giorno */
+/* Note nel dettaglio giorno: Grandi, Senza Grazie e Nitide */
 .log-note { 
-    font-size: 1.25rem; 
-    line-height: 1.5; 
-    font-family: 'Crimson Pro', serif; 
-    font-style: italic; 
+    font-size: 1.4rem; 
+    line-height: 1.4; 
+    font-family: 'Montserrat', sans-serif; 
+    font-weight: 500;
     opacity: 1; 
     color: var(--text);
     background: var(--bg); 
@@ -29,15 +29,50 @@
     border-radius: 12px; 
     border: 1px dashed var(--border); 
     white-space: pre-wrap; 
+    margin-top: 12px;
 }
 
-/* Definisce lo stile della scritta sciopero nell'inserimento */
-.label-sciopero-normale {
-    font-family: 'Montserrat', sans-serif; 
-    font-weight: 600;
-    font-size: 0.95rem; 
-    color: var(--text);
+/* Scritta "sciopero ?" piccola e moderna */
+.label-sciopero-mini {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-transform: lowercase; /* Tutto minuscolo come richiesto */
+    opacity: 0.7;
 }
+
+/* L'Interruttore Estetico (Switch) */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 42px;
+    height: 24px;
+}
+
+.switch input { opacity: 0; width: 0; height: 0; }
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px; width: 18px;
+    left: 3px; bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+input:checked + .slider { background-color: var(--primary); }
+input:checked + .slider:before { transform: translateX(18px); }
         :root {
             --bg: #F0F2F5; --card: #ffffff; --primary: #1A73E8; 
             --dark: #1F2937; --accent: #8AB4F8; --text: #111827; 
@@ -165,16 +200,21 @@
                 <option value="Altro">Altro</option>
             </select>
 
-       <div id="box-sciopero-parziale" class="hidden" style="margin: -5px 0 15px 0; display: flex; align-items: center; gap: 10px; background: var(--bg); padding: 12px; border-radius: 14px; border: 1px solid var(--border);">
-    <input type="checkbox" id="check-sciopero" onchange="toggleSciopero()" style="width: 18px; height: 18px; margin:0; cursor:pointer;">
+<div id="box-sciopero-parziale" class="hidden" style="margin: 0 0 15px 0; display: flex; align-items: center; justify-content: space-between; background: var(--card); padding: 12px 18px; border-radius: 16px; border: 1px solid var(--border);">
+    <span class="label-sciopero-mini">sciopero ?</span>
     
-    <div id="ui-sciopero" class="hidden" style="display: flex; align-items: center; gap: 10px; flex: 1;">
-        <span class="label-sciopero-normale">Sciopero</span>
-        <input type="time" id="si" style="margin:0; min-height: 38px; padding: 5px 10px; flex: 1;">
-        <input type="time" id="sf" style="margin:0; min-height: 38px; padding: 5px 10px; flex: 1;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+        <label class="switch">
+            <input type="checkbox" id="check-sciopero" onchange="toggleSciopero()">
+            <span class="slider"></span>
+        </label>
+
+        <div id="ui-sciopero" class="hidden" style="display: flex; align-items: center; gap: 8px;">
+            <input type="time" id="si" style="margin:0; min-height: 35px; width: 85px; padding: 5px; font-size: 0.9rem; border-radius: 8px;">
+            <input type="time" id="sf" style="margin:0; min-height: 35px; width: 85px; padding: 5px; font-size: 0.9rem; border-radius: 8px;">
+        </div>
     </div>
 </div>
-
             <div id="form-lavoro" class="hidden">
                 <label>Turno Generale</label>
                 <select id="categoria">
@@ -435,6 +475,7 @@
 </script>
 </body>
 </html>
+
 
 
 
