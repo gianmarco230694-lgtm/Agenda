@@ -52,7 +52,7 @@ input:checked + .slider:before { transform: translateX(18px); }
             --success: #22C55E;
             --riposo: #16a34a; --ferie: #ca8a04; --malattia: #dc2626; --altro: #64748b;
             --legge104: #2563eb; --permesso: #9333ea; --congedo: #0891b2;
-            --lp: #f97316; --sciopero: #000000;
+            --lp: #059669; --sciopero: #000000;
             --bordeaux: #800020;
         }
 
@@ -102,7 +102,7 @@ input:checked + .slider:before { transform: translateX(18px); }
         .bg-104 { background-color: #BFDBFE !important; color: #1e3a8a !important; border:none; }
         .bg-permesso { background-color: #E9D5FF !important; color: #581c87 !important; border:none; }
         .bg-congedo { background-color: #BAE6FD !important; color: #0c4a6e !important; border:none; }
-        .bg-lp { background-color: #fed7aa !important; color: #9a3412 !important; border:none; }
+        .bg-lp { background-color: var(--lp) !important; color: white !important; border:none; }
         .bg-altro { background-color: var(--altro) !important; color: white !important; border:none; }
 
 
@@ -463,6 +463,7 @@ function mostraDettagli(t) {
 </script>
 </body>
 </html>
+
 
 
 
