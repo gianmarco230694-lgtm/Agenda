@@ -18,16 +18,16 @@
     <style>
 /* Note: Stile "Nudo" ma con carattere grande e nitido */
 .log-note { 
-    font-size: 1.5rem !important; 
-    font-family: 'Montserrat', sans-serif; 
-    font-weight: 500; 
-    line-height: 1.5; 
-    color: var(--text); 
-    white-space: pre-wrap; 
-    margin-top: 15px; 
-    padding: 0 !important;       /* Toglie lo spazio interno del vecchio box */
-    border: none !important;    /* ELIMINA IL TRATTEGGIO */
-    background: none !important; /* TOGLIE LO SFONDO GRIGIO */
+    font-size: 1.4rem !important; 
+    font-family: 'Montserrat', sans-serif !important; 
+    font-weight: 500 !important;
+    line-height: 1.5 !important; 
+    color: var(--text) !important; 
+    white-space: pre-wrap !important; 
+    margin-top: 15px !important; 
+    border: none !important;      /* ELIMINA IL BOX TRATTEGGIATO */
+    background: none !important;   /* ELIMINA LO SFONDO GRIGIO */
+    padding: 0 !important;         /* ELIMINA LO SPAZIO INTERNO */
 }
 
 /* Scritta sciopero piccola e interruttore */
@@ -369,7 +369,7 @@ input:checked + .slider:before { transform: translateX(18px); }
 function mostraDettagli(t) {
         const area = document.getElementById('dettaglio-giorno'); area.classList.remove('hidden');
         const d1 = calcolaDettagli(t.i1, t.f1), d2 = calcolaDettagli(t.i2, t.f2), de = calcolaDettagli(t.ei, t.ef), ds = calcolaDettagli(t.si, t.sf);
-        const lavorateMin = (d1.totale + d2.totale + de.totale); // NO SOTTRAZIONE
+        const lavorateMin = (d1.totale + d2.totale + de.totale); // LOGICA NATIVA PRESERVATA
         const dt = new Date(t.data); const fest = isFestivo(dt.getDate(), dt.getMonth(), dt.getFullYear());
         let label = (t.tipo === 'Lavoro' && fest) ? "Lavoro (Festivo)" : t.tipo;
         
@@ -460,16 +460,5 @@ function mostraDettagli(t) {
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
 
 
