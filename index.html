@@ -32,15 +32,14 @@
     margin-top: 12px;
 }
 
-/* Scritta "sciopero ?" piccola e moderna */
+/* Scritta "sciopero" piccola e moderna */
 .label-sciopero-mini {
     font-family: 'Montserrat', sans-serif;
     font-size: 0.85rem;
     font-weight: 500;
-    text-transform: lowercase; /* Tutto minuscolo come richiesto */
+    text-transform: lowercase; 
     opacity: 0.7;
 }
-
 /* L'Interruttore Estetico (Switch) */
 .switch {
     position: relative;
@@ -201,7 +200,7 @@ input:checked + .slider:before { transform: translateX(18px); }
             </select>
 
 <div id="box-sciopero-parziale" class="hidden" style="margin: 0 0 15px 0; display: flex; align-items: center; justify-content: space-between; background: var(--card); padding: 12px 18px; border-radius: 16px; border: 1px solid var(--border);">
-    <span class="label-sciopero-mini">sciopero ?</span>
+    <span class="label-sciopero-mini">sciopero</span>
     
     <div style="display: flex; align-items: center; gap: 12px;">
         <label class="switch">
@@ -404,8 +403,8 @@ input:checked + .slider:before { transform: translateX(18px); }
             ${t.i1 ? `<div class="log-part"><b>1ª PARTE ${t.turn1||''}</b><div class="log-time-badge">${formattaMinuti(d1.totale)}<br><small>🌙 ${formattaMinuti(d1.notte)}</small></div>${t.i1}-${t.f1}<br>${t.li1||''} / ${t.lf1||''}<br><small>Vettura: ${t.vett1||''}</small></div>` : ''}
             ${t.i2 ? `<div class="log-part"><b>2ª PARTE ${t.turn2||''}</b><div class="log-time-badge">${formattaMinuti(d2.totale)}<br><small>🌙 ${formattaMinuti(d2.notte)}</small></div>${t.i2}-${t.f2}<br>${t.li2||''} / ${t.lf2||''}<br><small>Vettura: ${t.vett2||''}</small></div>` : ''}
             ${t.ei ? `<div class="log-part" style="border-color:var(--accent);"><b>EXTRA ${t.turnE||''}</b><div class="log-time-badge">${formattaMinuti(de.totale)}<br><small>🌙 ${formattaMinuti(de.notte)}</small></div>${t.ei}-${t.ef}<br>${t.lei||''} / ${t.lef||''}<br><small>Vettura: ${t.vettE||''}</small></div>` : ''}
-            ${t.si ? `<div class="log-part" style="border-left:4px solid var(--text);"><b>SCIOPERO</b><div class="log-time-badge">${formattaMinuti(ds.totale)}</div>${t.si}-${t.sf}</div>` : ''}
-        </div>${t.note ? `<div class="log-note"><b>Note:</b><br>${t.note}</div>` : ''}
+            ${t.si ? `<div class="log-part" style="border-left:4px solid var(--text)"><b>sciopero</b><div class="log-time-badge">${formattaMinuti(ds.totale)}</div>${t.si} - ${t.sf}</div>` : ''}
+        </div>${t.note ? `<div class="log-note">${t.note}</div>` : ''}
         <div style="display:flex; gap:10px; margin-top:15px;"><button class="nav-btn" style="background:var(--bg); border-radius:12px; height:45px; opacity:1;" onclick="avviaModifica('${t.data}')">Modifica</button><button class="nav-btn" style="background:#fee2e2; border-radius:12px; height:45px; color:var(--danger); opacity:1;" onclick="eliminaTurno('${t.data}')">Elimina</button></div></div>`;
         area.scrollIntoView({ behavior: 'smooth' });
     }
@@ -475,6 +474,7 @@ input:checked + .slider:before { transform: translateX(18px); }
 </script>
 </body>
 </html>
+
 
 
 
