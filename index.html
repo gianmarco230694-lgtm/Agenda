@@ -367,19 +367,32 @@ input:checked + .slider:before { transform: translateX(18px); }
         };
     }
 
-    function mostraDettagli(t) {
+function mostraDettagli(t) {
         const area = document.getElementById('dettaglio-giorno'); area.classList.remove('hidden');
         const d1 = calcolaDettagli(t.i1, t.f1), d2 = calcolaDettagli(t.i2, t.f2), de = calcolaDettagli(t.ei, t.ef), ds = calcolaDettagli(t.si, t.sf);
         const lavorateMin = (d1.totale + d2.totale + de.totale); // NO SOTTRAZIONE
         const dt = new Date(t.data); const fest = isFestivo(dt.getDate(), dt.getMonth(), dt.getFullYear());
         let label = (t.tipo === 'Lavoro' && fest) ? "Lavoro (Festivo)" : t.tipo;
-        area.innerHTML = `<div class="log-item"><div class="log-header"><b style="color:var(--primary); font-size:1.1rem;">${label} ${t.categoria||''}</b><span style="font-weight:800; color:var(--primary);">${lavorateMin > 0 ? formattaMinuti(lavorateMin) : ''}</span></div><div class="log-grid">
-            ${t.i1 ? `<div class="log-part"><b>1ª PARTE ${t.turn1||''}</b><div class="log-time-badge">${formattaMinuti(d1.totale)}<br><small>🌙 ${formattaMinuti(d1.notte)}</small></div>${t.i1}-${t.f1}<br>${t.li1||''} / ${t.lf1||''}<br><small>Vettura: ${t.vett1||''}</small></div>` : ''}
-            ${t.i2 ? `<div class="log-part"><b>2ª PARTE ${t.turn2||''}</b><div class="log-time-badge">${formattaMinuti(d2.totale)}<br><small>🌙 ${formattaMinuti(d2.notte)}</small></div>${t.i2}-${t.f2}<br>${t.li2||''} / ${t.lf2||''}<br><small>Vettura: ${t.vett2||''}</small></div>` : ''}
-            ${t.ei ? `<div class="log-part" style="border-color:var(--accent);"><b>EXTRA ${t.turnE||''}</b><div class="log-time-badge">${formattaMinuti(de.totale)}<br><small>🌙 ${formattaMinuti(de.notte)}</small></div>${t.ei}-${t.ef}<br>${t.lei||''} / ${t.lef||''}<br><small>Vettura: ${t.vettE||''}</small></div>` : ''}
-            ${t.si ? `<div class="log-part" style="border-left:4px solid var(--text)"><b>sciopero</b><div class="log-time-badge">${formattaMinuti(ds.totale)}</div>${t.si} - ${t.sf}</div>` : ''}
-        </div>${t.note ? `<div class="log-note">${t.note}</div>` : ''}
-        <div style="display:flex; gap:10px; margin-top:15px;"><button class="nav-btn" style="background:var(--bg); border-radius:12px; height:45px; opacity:1;" onclick="avviaModifica('${t.data}')">Modifica</button><button class="nav-btn" style="background:#fee2e2; border-radius:12px; height:45px; color:var(--danger); opacity:1;" onclick="eliminaTurno('${t.data}')">Elimina</button></div></div>`;
+        
+        area.innerHTML = `<div class="log-item">
+            <div class="log-header">
+                <b style="color:var(--primary); font-size:1.1rem;">${label} ${t.categoria||''}</b>
+                <span style="font-weight:800; color:var(--primary);">${lavorateMin > 0 ? formattaMinuti(lavorateMin) : ''}</span>
+            </div>
+            <div class="log-grid">
+                ${t.i1 ? `<div class="log-part"><b>1ª PARTE ${t.turn1||''}</b><div class="log-time-badge">${formattaMinuti(d1.totale)}<br><small>🌙 ${formattaMinuti(d1.notte)}</small></div>${t.i1}-${t.f1}<br>${t.li1||''} / ${t.lf1||''}<br><small>Vettura: ${t.vett1||''}</small></div>` : ''}
+                ${t.i2 ? `<div class="log-part"><b>2ª PARTE ${t.turn2||''}</b><div class="log-time-badge">${formattaMinuti(d2.totale)}<br><small>🌙 ${formattaMinuti(d2.notte)}</small></div>${t.i2}-${t.f2}<br>${t.li2||''} / ${t.lf2||''}<br><small>Vettura: ${t.vett2||''}</small></div>` : ''}
+                ${t.ei ? `<div class="log-part" style="border-color:var(--accent);"><b>EXTRA ${t.turnE||''}</b><div class="log-time-badge">${formattaMinuti(de.totale)}<br><small>🌙 ${formattaMinuti(de.notte)}</small></div>${t.ei}-${t.ef}<br>${t.lei||''} / ${t.lef||''}<br><small>Vettura: ${t.vettE||''}</small></div>` : ''}
+                ${t.si ? `<div class="log-part" style="border-left:4px solid var(--text)"><b>sciopero</b><div class="log-time-badge">${formattaMinuti(ds.totale)}</div>${t.si} - ${t.sf}</div>` : ''}
+            </div>
+            
+            ${t.note ? `<div class="log-note">${t.note}</div>` : ''}
+
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <button class="nav-btn" style="background:var(--bg); border-radius:12px; height:45px; opacity:1;" onclick="avviaModifica('${t.data}')">Modifica</button>
+                <button class="nav-btn" style="background:#fee2e2; border-radius:12px; height:45px; color:var(--danger); opacity:1;" onclick="eliminaTurno('${t.data}')">Elimina</button>
+            </div>
+        </div>`;
         area.scrollIntoView({ behavior: 'smooth' });
     }
 
@@ -448,6 +461,7 @@ input:checked + .slider:before { transform: translateX(18px); }
 </script>
 </body>
 </html>
+
 
 
 
