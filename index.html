@@ -163,10 +163,12 @@ input:checked + .slider:before { transform: translateX(18px); }
         <button onclick="toggleDarkMode()" style="background:var(--card); border:1px solid var(--border); padding:8px 12px; border-radius:12px; cursor:pointer; margin-top: 5px;">💡</button>
     </header>
 
-<main id="page-log">
+    <main id="page-log">
         <div class="cal-header">
-            <h2 id="cal-month-title">Mese Anno <span onclick="window.location.href='clock-alarm://'" style="cursor:pointer; margin-left:10px; font-style:normal;">⏰</span></h2>
+            <h2 id="cal-month-title">Mese Anno</h2>
         </div>
+        <div class="cal-grid" id="calendar-grid"></div>
+        <div id="dettaglio-giorno" class="hidden"></div>
     </main>
 
     <main id="page-home" class="hidden">
@@ -473,14 +475,3 @@ function mostraDettagli(t) {
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
