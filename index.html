@@ -96,22 +96,34 @@ input:checked + .slider:before { transform: translateX(18px); }
         .has-sciopero::after { content: ""; position: absolute; top: 2px; right: 2px; width: 0; height: 0; border-style: solid; border-width: 0 8px 8px 0; border-color: transparent var(--text) transparent transparent; opacity: 0.8; }
 
         .bg-lavoro { background-color: var(--primary) !important; color: white !important; border:none; }
-        .bg-riposo { background-color: #86EFAC !important; color: #064e3b !important; border:none; }
-        .bg-ferie { background-color: #FEF08A !important; color: #713f12 !important; border:none; }
-        .bg-malattia { background-color: #FECACA !important; color: #7f1d1d !important; border:none; }
-        .bg-104 { background-color: #BFDBFE !important; color: #1e3a8a !important; border:none; }
-        .bg-permesso { background-color: #E9D5FF !important; color: #581c87 !important; border:none; }
-        .bg-congedo { background-color: #BAE6FD !important; color: #0c4a6e !important; border:none; }
         .bg-lp { background-color: var(--lp) !important; color: white !important; border:none; }
         .bg-altro { background-color: var(--altro) !important; color: white !important; border:none; }
+       /* RIPOSO: da verde chiaro a Verde Prato Intenso */
+.bg-riposo { background-color: #22c55e !important; color: white !important; border:none; font-weight: 800; }
+
+/* FERIE: da giallo paglierino a Giallo Oro Vivo */
+.bg-ferie { background-color: #eab308 !important; color: white !important; border:none; font-weight: 800; }
+
+/* MALATTIA: da rosa a Rosso Acceso */
+.bg-malattia { background-color: #ef4444 !important; color: white !important; border:none; font-weight: 800; }
+
+/* 104: da azzurrino a Blu Reale */
+.bg-104 { background-color: #3b82f6 !important; color: white !important; border:none; font-weight: 800; }
+
+/* PERMESSO: da lilla a Viola Intenso */
+.bg-permesso { background-color: #a855f7 !important; color: white !important; border:none; font-weight: 800; }
+
+/* CONGEDO: da celeste a Turchese Carico */
+.bg-congedo { background-color: #06b6d4 !important; color: white !important; border:none; font-weight: 800; }
 
 
-        .text-riposo { color: var(--riposo) !important; }
-        .text-ferie { color: var(--ferie) !important; }
-        .text-malattia { color: var(--malattia) !important; }
-        .text-104 { color: var(--legge104) !important; }
-        .text-permesso { color: var(--permesso) !important; }
-        .text-congedo { color: var(--congedo) !important; }
+.text-riposo { color: #22c55e !important; }
+.text-ferie { color: #eab308 !important; }
+.text-malattia { color: #ef4444 !important; }
+.text-104 { color: #3b82f6 !important; }
+.text-permesso { color: #a855f7 !important; }
+.text-congedo { color: #06b6d4 !important; }
+
         .text-lp { color: var(--lp) !important; }
         .text-sciopero { color: var(--sciopero) !important; }
         .text-altro { color: var(--altro) !important; }
@@ -463,6 +475,7 @@ function mostraDettagli(t) {
 </script>
 </body>
 </html>
+
 
 
 
