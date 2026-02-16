@@ -16,6 +16,28 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:italic,wght@0,600;1,400&family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
+       /* Ingrandisce le note nel dettaglio del giorno */
+.log-note { 
+    font-size: 1.25rem; 
+    line-height: 1.5; 
+    font-family: 'Crimson Pro', serif; 
+    font-style: italic; 
+    opacity: 1; 
+    color: var(--text);
+    background: var(--bg); 
+    padding: 15px; 
+    border-radius: 12px; 
+    border: 1px dashed var(--border); 
+    white-space: pre-wrap; 
+}
+
+/* Definisce lo stile della scritta sciopero nell'inserimento */
+.label-sciopero-normale {
+    font-family: 'Montserrat', sans-serif; 
+    font-weight: 600;
+    font-size: 0.95rem; 
+    color: var(--text);
+}
         :root {
             --bg: #F0F2F5; --card: #ffffff; --primary: #1A73E8; 
             --dark: #1F2937; --accent: #8AB4F8; --text: #111827; 
@@ -143,14 +165,15 @@
                 <option value="Altro">Altro</option>
             </select>
 
-            <div id="box-sciopero-parziale" class="hidden" style="margin: -5px 0 15px 0; display: flex; align-items: center; gap: 10px; background: var(--bg); padding: 12px; border-radius: 14px; border: 1px solid var(--border);">
-                <input type="checkbox" id="check-sciopero" onchange="toggleSciopero()" style="width: 22px; min-height: 22px; margin:0;">
-                <div id="ui-sciopero" class="hidden" style="display: flex; align-items: center; gap: 10px; flex: 1;">
-                    <span style="font-weight: 700; font-size: 0.85rem; text-transform: uppercase;">Sciopero</span>
-                    <input type="time" id="si" style="margin:0; min-height: 38px; padding: 5px 10px; flex: 1;">
-                    <input type="time" id="sf" style="margin:0; min-height: 38px; padding: 5px 10px; flex: 1;">
-                </div>
-            </div>
+       <div id="box-sciopero-parziale" class="hidden" style="margin: -5px 0 15px 0; display: flex; align-items: center; gap: 10px; background: var(--bg); padding: 12px; border-radius: 14px; border: 1px solid var(--border);">
+    <input type="checkbox" id="check-sciopero" onchange="toggleSciopero()" style="width: 18px; height: 18px; margin:0; cursor:pointer;">
+    
+    <div id="ui-sciopero" class="hidden" style="display: flex; align-items: center; gap: 10px; flex: 1;">
+        <span class="label-sciopero-normale">Sciopero</span>
+        <input type="time" id="si" style="margin:0; min-height: 38px; padding: 5px 10px; flex: 1;">
+        <input type="time" id="sf" style="margin:0; min-height: 38px; padding: 5px 10px; flex: 1;">
+    </div>
+</div>
 
             <div id="form-lavoro" class="hidden">
                 <label>Turno Generale</label>
@@ -412,6 +435,7 @@
 </script>
 </body>
 </html>
+
 
 
 
