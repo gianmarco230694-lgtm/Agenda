@@ -165,7 +165,7 @@ input:checked + .slider:before { transform: translateX(18px); }
 
     <main id="page-log">
         <div class="cal-header">
-            <h2 id="cal-month-title">Mese Anno</h2>
+            <h2 id="cal-month-title">Mese Anno <span onclick="window.location.href='clock-alarm://'" style="cursor:pointer; margin-left:10px; font-size: 1.1rem; font-style: normal;">⏰</span></h2>
         </div>
         <div class="cal-grid" id="calendar-grid"></div>
         <div id="dettaglio-giorno" class="hidden"></div>
@@ -475,6 +475,7 @@ function mostraDettagli(t) {
 </script>
 </body>
 </html>
+
 
 
 
