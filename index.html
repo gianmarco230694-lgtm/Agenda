@@ -18,17 +18,16 @@
     <style>
 /* Note: Stile "Nudo" ma con carattere grande e nitido */
 .log-note { 
-    font-size: 1.4rem;          /* Corpo del carattere grande e leggibile */
+    font-size: 1.4rem !important; 
     font-family: 'Montserrat', sans-serif; 
-    font-weight: 500;           /* Testo deciso, non sottile */
+    font-weight: 500; 
     line-height: 1.5; 
     color: var(--text); 
     white-space: pre-wrap; 
     margin-top: 15px; 
-    padding-top: 12px;
-    border-top: 1px solid var(--border); /* Sottile linea di separazione dagli orari */
-    background: none;           /* Rimosso ogni sfondo */
-    border: none;               /* Rimosso ogni box tratteggiato */
+    padding: 0 !important;       /* Toglie lo spazio interno del vecchio box */
+    border: none !important;    /* ELIMINA IL TRATTEGGIO */
+    background: none !important; /* TOGLIE LO SFONDO GRIGIO */
 }
 
 /* Scritta sciopero piccola e interruttore */
@@ -461,6 +460,7 @@ function mostraDettagli(t) {
 </script>
 </body>
 </html>
+
 
 
 
