@@ -648,9 +648,125 @@ container.innerHTML = `
     if(window.intervalloSnake) clearInterval(window.intervalloSnake);
     window.intervalloSnake = setInterval(draw, 140);
 }
+
+function avviaSpaceInvaders() {
+    document.getElementById('menu-principale-giochi').classList.add('hidden');
+    const container = document.getElementById('container-gioco');
+    container.innerHTML = `
+        <div style="color:var(--primary); font-weight:800; margin-bottom:10px;">PUNTI: <span id="score">0</span></div>
+        <canvas id="spaceCanvas" width="300" height="350"></canvas>
+        
+        <div style="display: flex; justify-content: center; width: 100%; margin-top: 15px;">
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px; width:250px;">
+                <button class="btn-gioco" style="padding:20px;" onclick="muoviInvader(-20)">◀</button>
+                <button class="btn-gioco" style="padding:20px; background:var(--primary); color:white;" onclick="sparaInvader()">🚀</button>
+                <button class="btn-gioco" style="padding:20px;" onclick="muoviInvader(20)">▶</button>
+            </div>
+        </div>
+
+        <button class="btn-chiudi-sala" onclick="clearInterval(window.loopSpace); tornaAlMenu()" 
+                style="background:var(--altro); margin-top:20px;">TORNA AL MENU</button>
+    `;
+
+    const canvas = document.getElementById('spaceCanvas');
+    const ctx = canvas.getContext('2d');
+    let score = 0;
+    
+    // Navicella (Bus)
+    let player = { x: 135, y: 320, w: 30, h: 20 };
+    let proiettili = [];
+    let alieni = [];
+    let alienDir = 1;
+    let frameCont = 0;
+
+    // Creazione alieni
+    for(let r=0; r<3; r++) {
+        for(let c=0; c<6; c++) {
+            alieni.push({ x: c*40 + 30, y: r*30 + 30, w: 25, h: 15 });
+        }
+    }
+
+    window.muoviInvader = (offset) => {
+        player.x += offset;
+        if(player.x < 0) player.x = 0;
+        if(player.x > canvas.width - player.w) player.x = canvas.width - player.w;
+    };
+
+    window.sparaInvader = () => {
+        if(proiettili.length < 3) proiettili.push({ x: player.x + 13, y: player.y, w: 4, h: 10 });
+    };
+
+    function update() {
+        ctx.fillStyle = "#000";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Disegna Player
+        ctx.fillStyle = "#1A73E8";
+        ctx.fillRect(player.x, player.y, player.w, player.h);
+        ctx.fillStyle = "white"; // Finestrini bus
+        ctx.fillRect(player.x + 5, player.y + 5, 20, 5);
+
+        // Muovi e disegna proiettili
+        ctx.fillStyle = "#FFD700";
+        proiettili.forEach((p, index) => {
+            p.y -= 5;
+            ctx.fillRect(p.x, p.y, p.w, p.h);
+            if(p.y < 0) proiettili.splice(index, 1);
+        });
+
+        // Muovi alieni
+        frameCont++;
+        if(frameCont % 30 === 0) {
+            let scendi = false;
+            alieni.forEach(a => {
+                a.x += (10 * alienDir);
+                if(a.x > canvas.width - a.w || a.x < 0) scendi = true;
+            });
+            if(scendi) {
+                alienDir *= -1;
+                alieni.forEach(a => a.y += 10);
+            }
+        }
+
+        // Disegna alieni e controlla collisioni
+        ctx.fillStyle = "#EF4444";
+        alieni.forEach((a, aIdx) => {
+            ctx.fillRect(a.x, a.y, a.w, a.h);
+            
+            // Collisione proiettile-alieno
+            proiettili.forEach((p, pIdx) => {
+                if(p.x < a.x + a.w && p.x + p.w > a.x && p.y < a.y + a.h && p.y + p.h > a.y) {
+                    alieni.splice(aIdx, 1);
+                    proiettili.splice(pIdx, 1);
+                    score += 10;
+                    document.getElementById('score').innerText = score;
+                }
+            });
+
+            // Game Over
+            if(a.y + a.h > player.y) {
+                clearInterval(window.loopSpace);
+                alert("INVASIONE COMPLETATA! Punti: " + score);
+                tornaAlMenu();
+            }
+        });
+
+        if(alieni.length === 0) {
+            clearInterval(window.loopSpace);
+            alert("VITTORIA! Hai salvato il deposito!");
+            tornaAlMenu();
+        }
+    }
+
+    if(window.loopSpace) clearInterval(window.loopSpace);
+    window.loopSpace = setInterval(update, 1000/30);
+}
+   
+   
 </script>
 </body>
 </html>
+
 
 
 
