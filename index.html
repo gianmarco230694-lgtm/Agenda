@@ -191,10 +191,13 @@ input:checked + .slider:before { transform: translateX(18px); }
         <h2 style="color: var(--primary); font-variant: small-caps;">Sala Giochi Tranvieri</h2>
         <p style="opacity: 0.6; font-size: 0.8rem; margin-bottom: 20px;">Scegli il tuo passatempo</p>
         
-        <button class="btn-gioco" onclick="avviaSnake()">🐍 CORSA SU STRADA</button>
-        <button class="btn-gioco" onclick="avviaSpaceInvaders()">👾 PASSEGERI ALIENI</button>
+        <button class="btn-gioco" onclick="avviaSnake()">🐍 SERPENTE </button>
+        <button class="btn-gioco" onclick="avviaSpaceInvaders()">👾 INVASIONE ALIENA</button>
         <button class="btn-gioco" onclick="avviaTetris()">🧱 TETRIS PASSEGGERO</button>
         <button class="btn-gioco" onclick="avvia2048()">🔢 LOGICA 2048</button>
+        <button class="btn-gioco" onclick="avviaPacman()">🟡 PAC-MAN </button>
+        <button class="btn-gioco" onclick="avviaAsteroids()">🚀 ASTEROIDS</button>
+        <button class="btn-gioco" onclick="avviaPratoFiorito()">💣 PRATO FIORITO</button>
        
         <button class="btn-chiudi-sala" onclick="chiudiSalaGiochi()">CHIUDI SALA GIOCHI</button>
     </div>
@@ -932,9 +935,104 @@ function move2048(dir) {
     // Per ora ti ho preparato la struttura!
     alert("Ottima scelta! Se vuoi questo, ti incollo la logica completa dei movimenti!");
 }
+
+  function avviaPacman() {
+    document.getElementById('menu-principale-giochi').classList.add('hidden');
+    const container = document.getElementById('container-gioco');
+    container.innerHTML = `
+        <div style="color:var(--primary); font-weight:800;">PUNTI: <span id="pac-score">0</span></div>
+        <canvas id="pacCanvas" width="280" height="280"></canvas>
+        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin-top:15px; width:180px;">
+            <div></div><button class="btn-gioco" onclick="window.pacDir={x:0,y:-2}">▲</button><div></div>
+            <button class="btn-gioco" onclick="window.pacDir={x:-2,y:0}">◀</button>
+            <button class="btn-gioco" onclick="window.pacDir={x:0,y:2}">▼</button>
+            <button class="btn-gioco" onclick="window.pacDir={x:2,y:0}">▶</button>
+        </div>
+        <button class="btn-chiudi-sala" onclick="clearInterval(window.loopPac); tornaAlMenu()">MENU</button>
+    `;
+    const canvas = document.getElementById('pacCanvas');
+    const ctx = canvas.getContext('2d');
+    let score = 0, pac = {x:140, y:140}; window.pacDir = {x:0, y:0};
+    let dots = []; for(let i=0; i<10; i++) dots.push({x:Math.random()*260+10, y:Math.random()*260+10});
+    let ghost = {x:10, y:10};
+
+    window.loopPac = setInterval(() => {
+        ctx.fillStyle = "#000"; ctx.fillRect(0,0,280,280);
+        // Pacman
+        pac.x += window.pacDir.x; pac.y += window.pacDir.y;
+        if(pac.x<0) pac.x=280; if(pac.x>280) pac.x=0;
+        if(pac.y<0) pac.y=280; if(pac.y>280) pac.y=0;
+        ctx.fillStyle = "yellow"; ctx.beginPath(); ctx.arc(pac.x, pac.y, 10, 0.2*Math.PI, 1.8*Math.PI); ctx.lineTo(pac.x, pac.y); ctx.fill();
+        // Cibo
+        ctx.fillStyle = "white";
+        dots.forEach((d, i) => {
+            ctx.fillRect(d.x, d.y, 4, 4);
+            if(Math.hypot(pac.x-d.x, pac.y-d.y) < 12) { dots.splice(i,1); score+=10; document.getElementById('pac-score').innerText = score; dots.push({x:Math.random()*260+10, y:Math.random()*260+10});}
+        });
+        // Fantasma
+        ghost.x += (pac.x > ghost.x ? 1 : -1); ghost.y += (pac.y > ghost.y ? 1 : -1);
+        ctx.fillStyle = "red"; ctx.font = "20px Arial"; ctx.fillText("👻", ghost.x-10, ghost.y+10);
+        if(Math.hypot(pac.x-ghost.x, pac.y-ghost.y) < 15) { clearInterval(window.loopPac); alert("FANTASMA PRESO! Punti: "+score); tornaAlMenu(); }
+    }, 1000/30);
+} 
+
+   function avviaAsteroids() {
+    document.getElementById('menu-principale-giochi').classList.add('hidden');
+    const container = document.getElementById('container-gioco');
+    container.innerHTML = `<canvas id="astCanvas" width="300" height="300"></canvas>
+    <div style="display:flex; gap:10px; margin-top:15px;">
+        <button class="btn-gioco" onclick="window.astRot -= 0.5">◀ RUOTA</button>
+        <button class="btn-gioco" style="background:red; color:white;" onclick="window.astSpara()">FUOCO!</button>
+        <button class="btn-gioco" onclick="window.astRot += 0.5">RUOTA ▶</button>
+    </div>
+    <button class="btn-chiudi-sala" onclick="clearInterval(window.loopAst); tornaAlMenu()">ESCI</button>`;
+    
+    const canvas = document.getElementById('astCanvas'), ctx = canvas.getContext('2d');
+    window.astRot = 0; let bullets = [], rocks = [];
+    window.astSpara = () => bullets.push({x:150, y:150, dx:Math.cos(window.astRot)*5, dy:Math.sin(window.astRot)*5});
+
+    window.loopAst = setInterval(() => {
+        ctx.fillStyle="black"; ctx.fillRect(0,0,300,300);
+        // Nave
+        ctx.save(); ctx.translate(150,150); ctx.rotate(window.astRot);
+        ctx.strokeStyle="white"; ctx.beginPath(); ctx.moveTo(15,0); ctx.lineTo(-10,10); ctx.lineTo(-10,-10); ctx.closePath(); ctx.stroke(); ctx.restore();
+        // Proiettili
+        bullets.forEach((b,i)=>{ b.x+=b.dx; b.y+=b.dy; ctx.fillStyle="yellow"; ctx.fillRect(b.x,b.y,2,2); if(b.x<0||b.x>300||b.y<0||b.y>300) bullets.splice(i,1);});
+        // Rocce
+        if(Math.random()<0.05) rocks.push({x:Math.random()*300, y:0, dx:Math.random()*2-1, dy:Math.random()*2+1});
+        rocks.forEach((r,i)=>{ 
+            r.x+=r.dx; r.y+=r.dy; ctx.strokeStyle="gray"; ctx.strokeRect(r.x,r.y,20,20);
+            if(r.y>300) rocks.splice(i,1);
+            bullets.forEach((b,bi)=>{ if(Math.hypot(b.x-r.x, b.y-r.y)<20){rocks.splice(i,1); bullets.splice(bi,1);}});
+            if(Math.hypot(150-r.x, 150-r.y)<20){clearInterval(window.loopAst); alert("NAVE DISTRUTTA!"); tornaAlMenu();}
+        });
+    }, 1000/30);
+}
+
+   function avviaPratoFiorito() {
+    document.getElementById('menu-principale-giochi').classList.add('hidden');
+    const container = document.getElementById('container-gioco');
+    container.innerHTML = `<div id="prato-grid" style="display:grid; grid-template-columns:repeat(8, 30px); gap:2px; background:#999; padding:5px; border:3px solid #333;"></div>
+    <button class="btn-chiudi-sala" onclick="tornaAlMenu()" style="margin-top:20px;">INDIETRO</button>`;
+    
+    const grid = document.getElementById('prato-grid');
+    let mine = Array(64).fill(0).map(() => Math.random() < 0.15 ? 1 : 0);
+    
+    for(let i=0; i<64; i++) {
+        let box = document.createElement('div');
+        box.style.width="30px"; box.style.height="30px"; box.style.background="#ccc";
+        box.style.border="1px solid #666"; box.style.textAlign="center"; box.style.lineHeight="30px";
+        box.onclick = () => {
+            if(mine[i]) { box.innerHTML="💣"; box.style.background="red"; alert("BOOM! Fine giochi."); tornaAlMenu(); }
+            else { box.style.background="#eee"; box.innerHTML="0"; box.onclick=null; }
+        };
+        grid.appendChild(box);
+    }
+}
 </script>
 </body>
 </html>
+
 
 
 
