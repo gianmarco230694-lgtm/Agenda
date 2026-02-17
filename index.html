@@ -193,9 +193,9 @@ input:checked + .slider:before { transform: translateX(18px); }
         
         <button class="btn-gioco" onclick="avviaSnake()">🐍 CORSA SU STRADA</button>
         <button class="btn-gioco" onclick="avviaSpaceInvaders()">👾 PASSEGERI ALIENI</button>
-        <button class="btn-gioco" onclick="avviaTetris()">🧱 TETRIS</button>
-        <button class="btn-gioco" onclick="avviaFlappy()">🚌 BUS VOLANTE</button>
-        
+        <button class="btn-gioco" onclick="avviaTetris()">🧱 TETRIS PASSEGGERO</button>
+        <button class="btn-gioco" onclick="avviaBusRush()">🚌 DEVO SMONTA</button>
+       
         <button class="btn-chiudi-sala" onclick="chiudiSalaGiochi()">CHIUDI SALA GIOCHI</button>
     </div>
     
@@ -887,79 +887,86 @@ function avviaSpaceInvaders() {
     window.loopTetris = setInterval(() => { moveDown(); draw(); }, 800);
     draw();
 }
-   function avviaFlappy() {
+   function avviaBusRush() {
     document.getElementById('menu-principale-giochi').classList.add('hidden');
     const container = document.getElementById('container-gioco');
     container.innerHTML = `
-        <div style="color:var(--primary); font-weight:800; margin-bottom:10px;">PUNTI: <span id="flappy-score">0</span></div>
-        <canvas id="flappyCanvas" width="300" height="400"></canvas>
+        <div style="color:var(--primary); font-weight:800; margin-bottom:10px;">KM PERCORSI: <span id="rush-score">0</span></div>
+        <canvas id="rushCanvas" width="300" height="400"></canvas>
         
-        <div style="display: flex; justify-content: center; width: 100%; margin-top: 15px;">
-            <button class="btn-gioco" style="padding:25px; width:200px; background:var(--primary); color:white;" onclick="saltaFlappy()">SALTA 🚌</button>
+        <div style="display: flex; justify-content: center; gap: 20px; width: 100%; margin-top: 15px;">
+            <button class="btn-gioco" style="padding:20px; width:120px;" onclick="muoviBusRush(-1)">◀️ DX</button>
+            <button class="btn-gioco" style="padding:20px; width:120px;" onclick="muoviBusRush(1)">SX ▶️</button>
         </div>
 
-        <button class="btn-chiudi-sala" onclick="clearInterval(window.loopFlappy); tornaAlMenu()" 
+        <button class="btn-chiudi-sala" onclick="clearInterval(window.loopRush); tornaAlMenu()" 
                 style="background:var(--altro); margin-top:20px;">TORNA AL MENU</button>
     `;
 
-    const canvas = document.getElementById('flappyCanvas');
+    const canvas = document.getElementById('rushCanvas');
     const ctx = canvas.getContext('2d');
-    let score = 0;
-    let bus = { x: 50, y: 150, v: 0, g: 0.25 };
-    let tubi = [];
+    let km = 0;
+    let busPos = 1; // 0: Sinistra, 1: Centro, 2: Destra
+    let auto = [];
+    let speed = 5;
 
-    window.saltaFlappy = () => { bus.v = -5; };
+    window.muoviBusRush = (dir) => {
+        busPos += dir;
+        if(busPos < 0) busPos = 0;
+        if(busPos > 2) busPos = 2;
+    };
+
+    function creaAuto() {
+        if(Math.random() < 0.03) {
+            auto.push({ x: Math.floor(Math.random() * 3), y: -50 });
+        }
+    }
 
     function update() {
-        // Gravità
-        bus.v += bus.g;
-        bus.y += bus.v;
-
-        // Sfondo
-        ctx.fillStyle = "#70c5ce";
+        // Sfondo asfalto
+        ctx.fillStyle = "#333";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Linee stradali
+        ctx.strokeStyle = "#FFF";
+        ctx.setLineDash([20, 20]);
+        ctx.beginPath(); ctx.moveTo(100,0); ctx.lineTo(100,400); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(200,0); ctx.lineTo(200,400); ctx.stroke();
 
-        // Disegna Bus
-        ctx.font = "30px Arial";
-        ctx.fillText("🚌", bus.x, bus.y);
+        // Disegna il tuo BUS
+        ctx.font = "40px Arial";
+        ctx.fillText("🚌", busPos * 100 + 30, 350);
 
-        // Gestione Tubi
-        if(tubi.length === 0 || tubi[tubi.length - 1].x < 150) {
-            let gap = 120;
-            let pos = Math.random() * (canvas.height - gap - 100) + 50;
-            tubi.push({ x: canvas.width, y: pos, gap: gap, passed: false });
-        }
+        // Gestione Traffico
+        auto.forEach((a, i) => {
+            a.y += speed;
+            ctx.fillText("🚗", a.x * 100 + 30, a.y);
 
-        tubi.forEach((t, i) => {
-            t.x -= 3;
-            ctx.fillStyle = "#22C55E";
-            ctx.fillRect(t.x, 0, 40, t.y); // Tubo sopra
-            ctx.fillRect(t.x, t.y + t.gap, 40, canvas.height); // Tubo sotto
-
-            // Collisioni
-            if(bus.y < 0 || bus.y > canvas.height || 
-              (bus.x + 25 > t.x && bus.x < t.x + 40 && (bus.y - 25 < t.y || bus.y > t.y + t.gap))) {
-                clearInterval(window.loopFlappy);
-                alert("FINE TURNO! Punti: " + score);
+            // Collisione
+            if(a.y > 310 && a.y < 360 && a.x === busPos) {
+                clearInterval(window.loopRush);
+                alert("INCIDENTE! Hai percorso " + km + " KM. Attento ai punti della patente!");
                 tornaAlMenu();
             }
 
-            if(!t.passed && bus.x > t.x + 40) {
-                score++;
-                document.getElementById('flappy-score').innerText = score;
-                t.passed = true;
+            if(a.y > 450) {
+                auto.splice(i, 1);
+                km += 10;
+                document.getElementById('rush-score').innerText = km;
+                if(km % 100 === 0) speed += 0.5; // Aumenta difficoltà
             }
         });
 
-        if(tubi[0].x < -40) tubi.shift();
+        creaAuto();
     }
 
-    if(window.loopFlappy) clearInterval(window.loopFlappy);
-    window.loopFlappy = setInterval(update, 20);
+    if(window.loopRush) clearInterval(window.loopRush);
+    window.loopRush = setInterval(update, 1000/30);
 }
 </script>
 </body>
 </html>
+
 
 
 
