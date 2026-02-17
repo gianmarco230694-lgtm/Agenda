@@ -192,8 +192,8 @@ input:checked + .slider:before { transform: translateX(18px); }
         <p style="opacity: 0.6; font-size: 0.8rem; margin-bottom: 20px;">Scegli il tuo passatempo</p>
         
         <button class="btn-gioco" onclick="avviaSnake()">🐍 CORSA SU STRADA</button>
-        <button class="btn-gioco" onclick="avviaSpaceInvaders()">👾 INVASIONE PASSEGERI</button>
-        <button class="btn-gioco" onclick="alert('In arrivo...')">🧱 TETRIS</button>
+        <button class="btn-gioco" onclick="avviaSpaceInvaders()">👾 PASSEGERI ALIENI</button>
+        <button class="btn-gioco" onclick="avviaTetris()">🧱 TETRIS </button>
         
         <button class="btn-chiudi-sala" onclick="chiudiSalaGiochi()">CHIUDI SALA GIOCHI</button>
     </div>
@@ -782,11 +782,112 @@ function avviaSpaceInvaders() {
     if(window.loopSpace) clearInterval(window.loopSpace);
     window.loopSpace = setInterval(update, 1000/30);
 }
-   
+   function avviaTetris() {
+    document.getElementById('menu-principale-giochi').classList.add('hidden');
+    const container = document.getElementById('container-gioco');
+    container.innerHTML = `
+        <div style="color:var(--primary); font-weight:800; margin-bottom:10px;">LINEE: <span id="tetris-score">0</span></div>
+        <canvas id="tetrisCanvas" width="200" height="400"></canvas>
+        
+        <div style="display: flex; flex-direction: column; align-items: center; margin-top: 15px; gap: 10px;">
+            <button class="btn-gioco" style="width:80px; background:var(--primary); color:white;" onclick="ruotaTetris()">↻</button>
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px; width:250px;">
+                <button class="btn-gioco" onclick="muoviTetris(-1)">◀</button>
+                <button class="btn-gioco" onclick="giuTetris()">▼</button>
+                <button class="btn-gioco" onclick="muoviTetris(1)">▶</button>
+            </div>
+        </div>
+
+        <button class="btn-chiudi-sala" onclick="clearInterval(window.loopTetris); tornaAlMenu()" 
+                style="background:var(--altro); margin-top:20px;">TORNA AL MENU</button>
+    `;
+
+    const canvas = document.getElementById('tetrisCanvas');
+    const ctx = canvas.getContext('2d');
+    const COL = 10, ROW = 20, SQ = 20;
+    let score = 0;
+
+    // Colori dei pezzi (ispirati alla tua app)
+    const PEZZI = [
+        [ [[1,1,1,1]], "#1A73E8" ], // I
+        [ [[1,1,1],[0,1,0]], "#A855F7" ], // T
+        [ [[1,1,1],[1,0,0]], "#EAB308" ], // L
+        [ [[1,1],[1,1]], "#22C55E" ], // O
+        [ [[0,1,1],[1,1,0]], "#EF4444" ]  // S
+    ];
+
+    let board = Array.from({length: ROW}, () => Array(COL).fill("#000"));
+
+    function drawSquare(x, y, color) {
+        ctx.fillStyle = color;
+        ctx.fillRect(x*SQ, y*SQ, SQ, SQ);
+        ctx.strokeStyle = "#111";
+        ctx.strokeRect(x*SQ, y*SQ, SQ, SQ);
+    }
+
+    function drawBoard() {
+        for(let r=0; r<ROW; r++) for(let c=0; c<COL; c++) drawSquare(c, r, board[r][c]);
+    }
+
+    let p = generaPezzo();
+
+    function generaPezzo() {
+        let r = Math.floor(Math.random() * PEZZI.length);
+        return { active: PEZZI[r][0], color: PEZZI[r][1], x: 3, y: -2 };
+    }
+
+    function collisione(x, y, pezzo) {
+        for(let r=0; r<pezzo.length; r++) {
+            for(let c=0; c<pezzo[r].length; c++) {
+                if(!pezzo[r][c]) continue;
+                let newX = x + c, newY = y + r;
+                if(newX < 0 || newX >= COL || newY >= ROW) return true;
+                if(newY < 0) continue;
+                if(board[newY][newX] !== "#000") return true;
+            }
+        }
+        return false;
+    }
+
+    window.muoviTetris = (dir) => { if(!collisione(p.x+dir, p.y, p.active)) p.x += dir; draw(); };
+    window.giuTetris = () => { moveDown(); draw(); };
+    window.ruotaTetris = () => {
+        let n = p.active[0].map((_, i) => p.active.map(row => row[i]).reverse());
+        if(!collisione(p.x, p.y, n)) p.active = n;
+        draw();
+    };
+
+    function moveDown() {
+        if(!collisione(p.x, p.y+1, p.active)) { p.y++; } 
+        else {
+            if(p.y <= 0) { 
+                clearInterval(window.loopTetris); 
+                alert("DEPOSITO PIENO! Linee: " + score); 
+                tornaAlMenu(); 
+                return;
+            }
+            p.active.forEach((row, r) => row.forEach((v, c) => { if(v) board[p.y+r][p.x+c] = p.color; }));
+            for(let r=0; r<ROW; r++) {
+                if(board[r].every(cell => cell !== "#000")) {
+                    board.splice(r, 1); board.unshift(Array(COL).fill("#000"));
+                    score++; document.getElementById('tetris-score').innerText = score;
+                }
+            }
+            p = generaPezzo();
+        }
+    }
+
+    function draw() { drawBoard(); p.active.forEach((row, r) => row.forEach((v, c) => { if(v) drawSquare(p.x+c, p.y+r, p.color); })); }
+
+    if(window.loopTetris) clearInterval(window.loopTetris);
+    window.loopTetris = setInterval(() => { moveDown(); draw(); }, 800);
+    draw();
+}
    
 </script>
 </body>
 </html>
+
 
 
 
