@@ -15,7 +15,39 @@
     <meta name="theme-color" content="#1A73E8">
     
     <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:italic,wght@0,600;1,400&family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <style>
+    
+   <style>
+       
+/* Stile Sala Giochi */
+#sala-giochi {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: var(--dark); z-index: 10000;
+    display: none; flex-direction: column; align-items: center; justify-content: center;
+    color: white; font-family: 'Montserrat', sans-serif;
+}
+
+.menu-giochi { text-align: center; width: 90%; max-width: 400px; }
+
+.btn-gioco {
+    background: var(--card); color: var(--text);
+    border: 2px solid var(--primary); padding: 20px;
+    margin: 10px 0; width: 100%; border-radius: 20px;
+    font-weight: 800; cursor: pointer; font-size: 1rem;
+    display: flex; align-items: center; justify-content: center; gap: 15px;
+}
+
+.btn-gioco:active { transform: scale(0.95); }
+
+.btn-chiudi-sala {
+    margin-top: 30px; background: var(--danger);
+    color: white; border: none; padding: 12px 25px;
+    border-radius: 50px; font-weight: 700; cursor: pointer;
+}
+
+canvas { 
+    background: #000; border: 3px solid var(--primary); 
+    border-radius: 10px; max-width: 95vw; max-height: 70vh; 
+}
 /* Note: Stile "Nudo" ma con carattere grande e nitido */
 .log-note { 
     font-size: 1rem !important;  /* Modifica solo questo numero */
@@ -154,11 +186,27 @@ input:checked + .slider:before { transform: translateX(18px); }
 </head>
 <body>
 
+   <div id="sala-giochi">
+    <div id="menu-principale-giochi" class="menu-giochi">
+        <h2 style="color: var(--primary); font-variant: small-caps;">Sala Giochi Notturna</h2>
+        <p style="opacity: 0.6; font-size: 0.8rem; margin-bottom: 20px;">Scegli il tuo passatempo</p>
+        
+        <button class="btn-gioco" onclick="avviaSnake()">🐍 BUS SNAKE</button>
+        <button class="btn-gioco" onclick="alert('In arrivo...')">👾 SPACE INVADERS</button>
+        <button class="btn-gioco" onclick="alert('In arrivo...')">🧱 TETRIS</button>
+        
+        <button class="btn-chiudi-sala" onclick="chiudiSalaGiochi()">CHIUDI SALA GIOCHI</button>
+    </div>
+    
+    <div id="container-gioco"></div>
+</div>
+
 <div class="app-container">
-    <header style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px;">
+   
+<header style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px;">
         <div class="brand-section">
-            <h1 class="brand-title">Agenda.Lavoro</h1>
-            <span class="brand-subtitle">designed by Petrelli</span>
+            <h1 class="brand-title" onclick="attivaSalaGiochi()">Agenda.Lavoro</h1>
+            <span class="brand-subtitle">il tuo compagno di viaggio</span>
         </div>
         <button onclick="toggleDarkMode()" style="background:var(--card); border:1px solid var(--border); padding:8px 12px; border-radius:12px; cursor:pointer; margin-top: 5px;">💡</button>
     </header>
@@ -472,9 +520,33 @@ function mostraDettagli(t) {
 
     function esportaJSON() { db.transaction("turni").objectStore("turni").getAll().onsuccess = e => { const blob = new Blob([JSON.stringify(e.target.result)], {type: "application/json"}), a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "Backup_Agenda.json"; a.click(); }; }
     function importaJSON(event) { const reader = new FileReader(); reader.onload = async e => { const data = JSON.parse(e.target.result), tx = db.transaction("turni", "readwrite"), store = tx.objectStore("turni"); await store.clear(); data.forEach(t => store.put(t)); tx.oncomplete = () => location.reload(); }; reader.readAsText(event.target.files[0]); }
+
+   let clicks = 0;
+let timerClic;
+
+function attivaSalaGiochi() {
+    clicks++;
+    clearTimeout(timerClic);
+    if (clicks === 4) {
+        document.getElementById('sala-giochi').style.display = 'flex';
+        clicks = 0;
+    }
+    timerClic = setTimeout(() => { clicks = 0; }, 2000);
+}
+
+function chiudiSalaGiochi() {
+    document.getElementById('sala-giochi').style.display = 'none';
+    // Qui fermeremo eventuali loop di gioco attivi
+}
+
+function tornaAlMenu() {
+    document.getElementById('container-gioco').innerHTML = ''; // Pulisce il gioco
+    document.getElementById('menu-principale-giochi').classList.remove('hidden');
+}
 </script>
 </body>
 </html>
+
 
 
 
