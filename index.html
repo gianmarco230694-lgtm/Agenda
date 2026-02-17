@@ -353,7 +353,6 @@ canvas.ontouchstart = (e) => {
         else if (y < centerY && dy === 0) { dx = 0; dy = -10; } // Su
     }
 };
-
     if(window.gameLoop) clearInterval(window.gameLoop);
     window.gameLoop = setInterval(gameStep, 100);
 
@@ -604,6 +603,7 @@ function mostraDettagli(t) {
 </script>
 </body>
 </html>
+
 
 
 
