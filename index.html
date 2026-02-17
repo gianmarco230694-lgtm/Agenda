@@ -543,9 +543,87 @@ function tornaAlMenu() {
     document.getElementById('container-gioco').innerHTML = ''; // Pulisce il gioco
     document.getElementById('menu-principale-giochi').classList.remove('hidden');
 }
+   function avviaSnake() {
+    document.getElementById('menu-principale-giochi').classList.add('hidden');
+    const container = document.getElementById('container-gioco');
+    container.innerHTML = `
+        <canvas id="snakeCanvas" width="300" height="400"></canvas>
+        <div id="controlli-snake" style="margin-top:20px; display:grid; grid-template-columns: repeat(3, 1fr); gap:10px;">
+            <div></div><button class="btn-gioco" onclick="cambiaDir('UP')">▲</button><div></div>
+            <button class="btn-gioco" onclick="cambiaDir('LEFT')">◀</button>
+            <button class="btn-gioco" onclick="cambiaDir('DOWN')">▼</button>
+            <button class="btn-gioco" onclick="cambiaDir('RIGHT')">▶</button>
+        </div>
+        <button class="btn-chiudi-sala" onclick="tornaAlMenu()" style="background:var(--altro); margin-top:20px;">TORNA AL MENU</button>
+    `;
+
+    const canvas = document.getElementById('snakeCanvas');
+    const ctx = canvas.getContext('2d');
+    const box = 20;
+    let snake = [{x: 8 * box, y: 10 * box}, {x: 7 * box, y: 10 * box}];
+    let cibo = { x: Math.floor(Math.random()*14+1)*box, y: Math.floor(Math.random()*19+1)*box };
+    let d = "RIGHT";
+    
+    window.cambiaDir = (nuovaDir) => {
+        if(nuovaDir == "LEFT" && d != "RIGHT") d = "LEFT";
+        if(nuovaDir == "UP" && d != "DOWN") d = "UP";
+        if(nuovaDir == "RIGHT" && d != "LEFT") d = "RIGHT";
+        if(nuovaDir == "DOWN" && d != "UP") d = "DOWN";
+    };
+
+    function draw() {
+        ctx.fillStyle = "#000";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        for(let i=0; i<snake.length; i++) {
+            ctx.fillStyle = (i==0) ? "#1A73E8" : "#8AB4F8"; // Testa blu scuro, corpo azzurro
+            ctx.strokeStyle = "#000";
+            ctx.fillRect(snake[i].x, snake[i].y, box, box);
+            ctx.strokeRect(snake[i].x, snake[i].y, box, box);
+        }
+
+        ctx.fillStyle = "#EF4444"; // Passeggero (cibo)
+        ctx.beginPath();
+        ctx.arc(cibo.x + box/2, cibo.y + box/2, box/2 - 2, 0, 2 * Math.PI);
+        ctx.fill();
+
+        let sX = snake[0].x;
+        let sY = snake[0].y;
+
+        if(d == "LEFT") sX -= box;
+        if(d == "UP") sY -= box;
+        if(d == "RIGHT") sX += box;
+        if(d == "DOWN") sY += box;
+
+        if(sX == cibo.x && sY == cibo.y) {
+            cibo = { x: Math.floor(Math.random()*14+1)*box, y: Math.floor(Math.random()*19+1)*box };
+        } else {
+            snake.pop();
+        }
+
+        let nuovaTesta = {x: sX, y: sY};
+
+        if(sX < 0 || sX >= canvas.width || sY < 0 || sY >= canvas.height || collisione(nuovaTesta, snake)) {
+            clearInterval(gioco);
+            alert("TURNO FINITO! Hai caricato troppi passeggeri.");
+            tornaAlMenu();
+        }
+        snake.unshift(nuovaTesta);
+    }
+
+    function collisione(head, array) {
+        for(let i=0; i<array.length; i++) {
+            if(head.x == array[i].x && head.y == array[i].y) return true;
+        }
+        return false;
+    }
+
+    let gioco = setInterval(draw, 150);
+}
 </script>
 </body>
 </html>
+
 
 
 
