@@ -193,7 +193,8 @@ input:checked + .slider:before { transform: translateX(18px); }
         
         <button class="btn-gioco" onclick="avviaSnake()">🐍 CORSA SU STRADA</button>
         <button class="btn-gioco" onclick="avviaSpaceInvaders()">👾 PASSEGERI ALIENI</button>
-        <button class="btn-gioco" onclick="avviaTetris()">🧱 TETRIS </button>
+        <button class="btn-gioco" onclick="avviaTetris()">🧱 TETRIS</button>
+        <button class="btn-gioco" onclick="avviaFlappy()">🚌 BUS VOLANTE</button>
         
         <button class="btn-chiudi-sala" onclick="chiudiSalaGiochi()">CHIUDI SALA GIOCHI</button>
     </div>
@@ -886,9 +887,80 @@ function avviaSpaceInvaders() {
     window.loopTetris = setInterval(() => { moveDown(); draw(); }, 800);
     draw();
 }
+   function avviaFlappy() {
+    document.getElementById('menu-principale-giochi').classList.add('hidden');
+    const container = document.getElementById('container-gioco');
+    container.innerHTML = `
+        <div style="color:var(--primary); font-weight:800; margin-bottom:10px;">PUNTI: <span id="flappy-score">0</span></div>
+        <canvas id="flappyCanvas" width="300" height="400"></canvas>
+        
+        <div style="display: flex; justify-content: center; width: 100%; margin-top: 15px;">
+            <button class="btn-gioco" style="padding:25px; width:200px; background:var(--primary); color:white;" onclick="saltaFlappy()">SALTA 🚌</button>
+        </div>
+
+        <button class="btn-chiudi-sala" onclick="clearInterval(window.loopFlappy); tornaAlMenu()" 
+                style="background:var(--altro); margin-top:20px;">TORNA AL MENU</button>
+    `;
+
+    const canvas = document.getElementById('flappyCanvas');
+    const ctx = canvas.getContext('2d');
+    let score = 0;
+    let bus = { x: 50, y: 150, v: 0, g: 0.25 };
+    let tubi = [];
+
+    window.saltaFlappy = () => { bus.v = -5; };
+
+    function update() {
+        // Gravità
+        bus.v += bus.g;
+        bus.y += bus.v;
+
+        // Sfondo
+        ctx.fillStyle = "#70c5ce";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Disegna Bus
+        ctx.font = "30px Arial";
+        ctx.fillText("🚌", bus.x, bus.y);
+
+        // Gestione Tubi
+        if(tubi.length === 0 || tubi[tubi.length - 1].x < 150) {
+            let gap = 120;
+            let pos = Math.random() * (canvas.height - gap - 100) + 50;
+            tubi.push({ x: canvas.width, y: pos, gap: gap, passed: false });
+        }
+
+        tubi.forEach((t, i) => {
+            t.x -= 3;
+            ctx.fillStyle = "#22C55E";
+            ctx.fillRect(t.x, 0, 40, t.y); // Tubo sopra
+            ctx.fillRect(t.x, t.y + t.gap, 40, canvas.height); // Tubo sotto
+
+            // Collisioni
+            if(bus.y < 0 || bus.y > canvas.height || 
+              (bus.x + 25 > t.x && bus.x < t.x + 40 && (bus.y - 25 < t.y || bus.y > t.y + t.gap))) {
+                clearInterval(window.loopFlappy);
+                alert("FINE TURNO! Punti: " + score);
+                tornaAlMenu();
+            }
+
+            if(!t.passed && bus.x > t.x + 40) {
+                score++;
+                document.getElementById('flappy-score').innerText = score;
+                t.passed = true;
+            }
+        });
+
+        if(tubi[0].x < -40) tubi.shift();
+    }
+
+    if(window.loopFlappy) clearInterval(window.loopFlappy);
+    window.loopFlappy = setInterval(update, 20);
+}
 </script>
 </body>
 </html>
+
 
 
 
