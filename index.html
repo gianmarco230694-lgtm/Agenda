@@ -292,13 +292,23 @@ input:checked + .slider:before { transform: translateX(18px); }
                 .catch(err => console.log('Errore offline', err));
         });
     }
-   let lastTitleClick = 0;
+let titleClickCount = 0;
+let titleClickTimer;
+
 document.querySelector('.brand-title').addEventListener('click', () => {
-    let now = Date.now();
-    if (now - lastTitleClick < 300) { // Riconosce il doppio clic (300ms)
+    titleClickCount++;
+    
+    // Se arrivi a 4 clic veloci, si apre la sala giochi
+    if (titleClickCount === 4) { 
         document.getElementById('arcade-room').classList.remove('hidden');
+        titleClickCount = 0; 
     }
-    lastTitleClick = now;
+
+    // Se ti fermi, il conteggio si azzera dopo 1 secondo
+    clearTimeout(titleClickTimer);
+    titleClickTimer = setTimeout(() => {
+        titleClickCount = 0;
+    }, 1000); 
 });
 
 function chiudiArcade() {
@@ -587,5 +597,6 @@ function mostraDettagli(t) {
 </script>
 </body>
 </html>
+
 
 
