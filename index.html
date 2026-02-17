@@ -358,13 +358,15 @@ canvas.ontouchstart = (e) => {
     window.gameLoop = setInterval(gameStep, 100);
 
     function gameStep() {
-        if (didGameEnd()) {
+if (didGameEnd()) {
             clearInterval(window.gameLoop);
             alert("GIOCO FINITO! Punteggio: " + score);
-            chiudiArcade();
+            
+            // Invece di chiudere tutto, torniamo al menu
+            document.getElementById('game-container').classList.add('hidden');
+            document.getElementById('menu-giochi').classList.remove('hidden');
             return;
         }
-
         const head = {x: snake[0].x + dx, y: snake[0].y + dy};
         snake.unshift(head);
 
@@ -602,6 +604,7 @@ function mostraDettagli(t) {
 </script>
 </body>
 </html>
+
 
 
 
