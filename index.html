@@ -546,15 +546,25 @@ function tornaAlMenu() {
 function avviaSnake() {
     document.getElementById('menu-principale-giochi').classList.add('hidden');
     const container = document.getElementById('container-gioco');
-    container.innerHTML = `
+container.innerHTML = `
         <canvas id="snakeCanvas" width="300" height="340"></canvas>
-        <div id="controlli-snake" style="margin-top:15px; display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; width:200px;">
-            <div></div><button class="btn-gioco" style="padding:15px" onclick="cambiaDir('UP')">▲</button><div></div>
-            <button class="btn-gioco" style="padding:15px" onclick="cambiaDir('LEFT')">◀</button>
-            <button class="btn-gioco" style="padding:15px" onclick="cambiaDir('DOWN')">▼</button>
-            <button class="btn-gioco" style="padding:15px" onclick="cambiaDir('RIGHT')">▶</button>
+        
+        <div style="display: flex; justify-content: center; width: 100%; margin-top: 15px;">
+            <div id="controlli-snake" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; width:210px;">
+                <div></div>
+                <button class="btn-gioco" style="padding:20px" onclick="cambiaDir('UP')">▲</button>
+                <div></div>
+                
+                <button class="btn-gioco" style="padding:20px" onclick="cambiaDir('LEFT')">◀</button>
+                <button class="btn-gioco" style="padding:20px" onclick="cambiaDir('DOWN')">▼</button>
+                <button class="btn-gioco" style="padding:20px" onclick="cambiaDir('RIGHT')">▶</button>
+            </div>
         </div>
-        <button class="btn-chiudi-sala" onclick="clearInterval(window.intervalloSnake); tornaAlMenu()" style="background:var(--altro); margin-top:15px; padding:8px 15px; font-size:0.8rem;">TORNA AL MENU</button>
+
+        <button class="btn-chiudi-sala" onclick="clearInterval(window.intervalloSnake); tornaAlMenu()" 
+                style="background:var(--altro); margin-top:20px; padding:10px 20px;">
+            TORNA AL MENU
+        </button>
     `;
 
     const canvas = document.getElementById('snakeCanvas');
@@ -641,6 +651,7 @@ function avviaSnake() {
 </script>
 </body>
 </html>
+
 
 
 
