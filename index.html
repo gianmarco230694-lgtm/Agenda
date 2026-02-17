@@ -333,21 +333,26 @@ function startSnake() {
     createFood();
     dx = 10; dy = 0; score = 0;
 
-    // Controllo Touch Universale (iOS/Android)
-    canvas.onclick = (e) => {
-        const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        
-        // Dividiamo il canvas in 4 triangoli invisibili per le direzioni
-        if (Math.abs(x - 150) > Math.abs(y - 150)) {
-            if (x > 150 && dx === 0) { dx = 10; dy = 0; } // Destra
-            else if (x < 150 && dx === 0) { dx = -10; dy = 0; } // Sinistra
-        } else {
-            if (y > 150 && dy === 0) { dx = 0; dy = 10; } // Giù
-            else if (y < 150 && dy === 0) { dx = 0; dy = -10; } // Su
-        }
-    };
+// Controllo Touch Istantaneo (Universale)
+canvas.ontouchstart = (e) => {
+    e.preventDefault(); // Impedisce lo scroll dell'agenda mentre giochi
+    const touch = e.touches[0];
+    const rect = canvas.getBoundingClientRect();
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+    
+    // Calcolo centro del quadrato (150 è la metà di 300)
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+
+    if (Math.abs(x - centerX) > Math.abs(y - centerY)) {
+        if (x > centerX && dx === 0) { dx = 10; dy = 0; } // Destra
+        else if (x < centerX && dx === 0) { dx = -10; dy = 0; } // Sinistra
+    } else {
+        if (y > centerY && dy === 0) { dx = 0; dy = 10; } // Giù
+        else if (y < centerY && dy === 0) { dx = 0; dy = -10; } // Su
+    }
+};
 
     if(window.gameLoop) clearInterval(window.gameLoop);
     window.gameLoop = setInterval(gameStep, 100);
@@ -597,6 +602,7 @@ function mostraDettagli(t) {
 </script>
 </body>
 </html>
+
 
 
 
