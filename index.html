@@ -162,7 +162,24 @@ input:checked + .slider:before { transform: translateX(18px); }
         body.dark-mode .text-sciopero { color: #ffffff !important; }
 
         .card { background: var(--card); padding: 22px; border-radius: 24px; border: 1px solid var(--border); margin-bottom: 20px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+/* Griglia orari più ordinata */
+.grid { 
+    display: flex; 
+    gap: 10px; 
+    margin-bottom: 12px;
+}
+
+.grid > div { 
+    flex: 1; /* Forza i due quadrati a dividersi lo spazio esattamente a metà */
+}
+
+input[type="time"] {
+    width: 100%;
+    padding: 10px 5px; /* Ridotto leggermente il padding laterale */
+    font-size: 0.9rem;
+    text-align: center;
+    appearance: none; /* Rimuove icone orologio predefinite su alcuni browser */
+}
         label { font-size: 0.65rem; font-weight: 700; opacity: 0.5; text-transform: uppercase; margin-bottom: 8px; display: block; letter-spacing: 1px; }
         input, select, textarea { width: 100%; min-height: 50px; padding: 12px; margin-bottom: 15px; border: 1px solid var(--border); border-radius: 14px; background: var(--bg); color: var(--text); font-family: inherit; box-sizing: border-box; font-size: 1rem; }
         .btn-main { background: var(--primary); color: white; width: 100%; padding: 18px; border: none; border-radius: 16px; font-weight: 700; font-size: 0.9rem; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
@@ -216,9 +233,11 @@ input:checked + .slider:before { transform: translateX(18px); }
     </header>
 
     <main id="page-log">
-        <div class="cal-header">
-            <h2 id="cal-month-title">Mese Anno</h2>
-        </div>
+<div class="cal-header" style="display: flex; justify-content: center; align-items: center; margin: 15px 0; gap: 20px;">
+    <button onclick="changeMonth(-1)" style="background: none; border: none; color: var(--primary); font-size: 1.8rem; cursor: pointer; padding: 10px; line-height: 1;">❮</button>
+    <h2 id="cal-month-title" style="margin: 0; min-width: 160px; text-align: center;">Mese Anno</h2>
+    <button onclick="changeMonth(1)" style="background: none; border: none; color: var(--primary); font-size: 1.8rem; cursor: pointer; padding: 10px; line-height: 1;">❯</button>
+</div>
         <div class="cal-grid" id="calendar-grid"></div>
         <div id="dettaglio-giorno" class="hidden"></div>
     </main>
@@ -921,6 +940,7 @@ function avviaSpaceInvaders() {
 </script>
 </body>
 </html>
+
 
 
 
