@@ -240,7 +240,7 @@ input:checked + .slider:before { transform: translateX(18px); }
             </select>
 
 <div id="box-sciopero-parziale" class="hidden" style="margin: 0 0 15px 0; display: flex; align-items: center; justify-content: space-between; background: var(--card); padding: 12px 18px; border-radius: 16px; border: 1px solid var(--border);">
-    <span class="label-sciopero-mini">sciopero</span>
+    <span id="testo-sciopero" class="label-sciopero-mini">? sciopero</span>
     
     <div style="display: flex; align-items: center; gap: 12px;">
         <label class="switch">
@@ -352,7 +352,24 @@ input:checked + .slider:before { transform: translateX(18px); }
         if(p === 'stats') caricaStatistiche();
     }
 
-    function toggleSciopero() { const isChecked = document.getElementById('check-sciopero').checked; document.getElementById('ui-sciopero').classList.toggle('hidden', !isChecked); }
+   function toggleSciopero() {
+    const isChecked = document.getElementById('check-sciopero').checked;
+    const uiOrari = document.getElementById('ui-sciopero');
+    const labelTesto = document.getElementById('testo-sciopero');
+
+    if (isChecked) {
+        // Se attivo: mostro gli orari e nascondo la scritta "? sciopero"
+        uiOrari.classList.remove('hidden');
+        labelTesto.classList.add('hidden');
+    } else {
+        // Se disattivo: nascondo gli orari e mostro la scritta "? sciopero"
+        uiOrari.classList.add('hidden');
+        labelTesto.classList.remove('hidden');
+        // Pulisco i campi orario così non rimangono dati "fantasma"
+        document.getElementById('si').value = "";
+        document.getElementById('sf').value = "";
+    }
+}
 
     function checkTipo() {
         const tipo = document.getElementById('tipo').value;
@@ -462,13 +479,26 @@ function mostraDettagli(t) {
         area.scrollIntoView({ behavior: 'smooth' });
     }
 
-    function avviaModifica(d) {
-        db.transaction("turni").objectStore("turni").get(d).onsuccess = e => {
-            const t = e.target.result; selectedDateStr = t.data; document.getElementById('data_nascosta').value = t.data; document.getElementById('tipo').value = t.tipo; document.getElementById('categoria').value = t.categoria || "";
-            ['i1','f1','li1','lf1','vett1','turn1','i2','f2','li2','lf2','vett2','turn2','ei','ef','lei','lef','vettE','turnE','si','sf','note'].forEach(f => { if(document.getElementById(f)) document.getElementById(f).value = t[f] || ""; });
-            document.getElementById('check-sciopero').checked = !!t.si; checkTipo(); toggleSciopero(); switchPage('home');
-        };
-    }
+function avviaModifica(d) {
+    db.transaction("turni").objectStore("turni").get(d).onsuccess = e => {
+        const t = e.target.result; 
+        selectedDateStr = t.data; 
+        document.getElementById('data_nascosta').value = t.data; 
+        document.getElementById('tipo').value = t.tipo; 
+        document.getElementById('categoria').value = t.categoria || "";
+        
+        ['i1','f1','li1','lf1','vett1','turn1','i2','f2','li2','lf2','vett2','turn2','ei','ef','lei','lef','vettE','turnE','si','sf','note'].forEach(f => { 
+            if(document.getElementById(f)) document.getElementById(f).value = t[f] || ""; 
+        });
+
+        // Qui carichiamo lo stato dello switch
+        document.getElementById('check-sciopero').checked = !!t.si; 
+        
+        checkTipo(); 
+        toggleSciopero(); // <-- Questa riga sincronizza la sparizione della scritta se c'è già uno sciopero salvato
+        switchPage('home');
+    };
+}
 
     function pulisciCampi() {
         ['tipo','categoria','i1','f1','li1','lf1','vett1','turn1','i2','f2','li2','lf2','vett2','turn2','ei','ef','lei','lef','vettE','turnE','si','sf','note'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).value = ""; });
@@ -891,6 +921,7 @@ function avviaSpaceInvaders() {
 </script>
 </body>
 </html>
+
 
 
 
