@@ -132,9 +132,10 @@
     width: 0; 
     height: 0; 
     border-style: solid; 
-    border-width: 0 14px 14px 0; /* Ingrandito a 14px */
+    border-width: 0 20px 20px 0; /* Ingrandito a 20px */
     border-color: transparent var(--text) transparent transparent; 
-    opacity: 0.9; 
+    opacity: 0.9;
+    z-index: 1;
 }
 
         .bg-lavoro { background-color: var(--primary) !important; color: white !important; border:none; }
@@ -550,33 +551,62 @@
 
     function eliminaTurno(d) { if(confirm("Eliminare?")) db.transaction("turni", "readwrite").objectStore("turni").delete(d).onsuccess = () => renderCalendar(); }
 
-    function caricaStatistiche() {
-        const meseMesso = `${currentViewDate.getFullYear()}-${String(currentViewDate.getMonth()+1).padStart(2,'0')}`;
-        let mGen = 0, mNotte = 0, mExtra = 0, nNastri = 0, counts = {}, sMinuti = 0, sGiorni = 0, festiviLavorati = 0;
-        db.transaction("turni").objectStore("turni").openCursor().onsuccess = e => {
-            const cursor = e.target.result;
-            if (cursor) {
-                if (cursor.value.data.startsWith(meseMesso)) {
-                    const t = cursor.value, dt = new Date(t.data), fest = isFestivo(dt.getDate(), dt.getMonth(), dt.getFullYear());
-                    if (t.tipo === 'Lavoro') {
-                        if(fest) festiviLavorati++;
-                        const d1 = calcolaDettagli(t.i1, t.f1), d2 = calcolaDettagli(t.i2, t.f2), de = calcolaDettagli(t.ei, t.ef), ds = calcolaDettagli(t.si, t.sf);
-                        mGen += (d1.totale + d2.totale + de.totale); mNotte += (d1.notte + d2.notte + de.notte); mExtra += de.totale;
-                        if(t.si) { sGiorni++; sMinuti += ds.totale; }
-                    } else counts[t.tipo] = (counts[t.tipo] || 0) + 1;
+function caricaStatistiche() {
+    const meseMesso = `${currentViewDate.getFullYear()}-${String(currentViewDate.getMonth()+1).padStart(2,'0')}`;
+    let mGen = 0, mNotte = 0, mExtra = 0, counts = {}, sMinuti = 0, sGiorni = 0;
+
+    db.transaction("turni").objectStore("turni").openCursor().onsuccess = e => {
+        const cursor = e.target.result;
+        if (cursor) {
+            if (cursor.value.data.startsWith(meseMesso)) {
+                const t = cursor.value;
+                if (t.tipo === 'Lavoro') {
+                    const d1 = calcolaDettagli(t.i1, t.f1), 
+                          d2 = calcolaDettagli(t.i2, t.f2), 
+                          de = calcolaDettagli(t.ei, t.ef),
+                          ds = calcolaDettagli(t.si, t.sf);
+                    
+                    mGen += (d1.totale + d2.totale + de.totale); 
+                    mNotte += (d1.notte + d2.notte + de.notte); 
+                    mExtra += de.totale;
+
+                    // Calcolo Sciopero: se esistono orari di inizio e fine sciopero
+                    if(t.si && t.sf) { 
+                        sGiorni++; 
+                        sMinuti += ds.totale; 
+                    }
+                } else {
+                    counts[t.tipo] = (counts[t.tipo] || 0) + 1;
                 }
-                cursor.continue();
-            } else {
-                document.getElementById('stat-tot-mese').innerText = formattaMinuti(mGen);
-                document.getElementById('stat-diurno').innerText = formattaMinuti(mGen - mNotte);
-                document.getElementById('stat-notte').innerText = formattaMinuti(mNotte);
-                document.getElementById('stat-extra').innerText = formattaMinuti(mExtra);
-                const list = document.getElementById('lista-stat-eventi'); list.innerHTML = "";
-                const ord = ['Riposo','Ferie','Malattia','104','Permesso','Congedo','Lp','Altro'];
-                ord.forEach(k => { if(counts[k]) list.innerHTML += `<div class="stat-row text-${k.toLowerCase()}"><b>${k}</b><b>${counts[k]}</b></div>`; });
             }
-        };
-    }
+            cursor.continue();
+        } else {
+            // Aggiorna le card in alto
+            document.getElementById('stat-tot-mese').innerText = formattaMinuti(mGen);
+            document.getElementById('stat-diurno').innerText = formattaMinuti(mGen - mNotte);
+            document.getElementById('stat-notte').innerText = formattaMinuti(mNotte);
+            document.getElementById('stat-extra').innerText = formattaMinuti(mExtra);
+            
+            const list = document.getElementById('lista-stat-eventi'); 
+            list.innerHTML = "";
+            
+            // Inserimento riga Sciopero (Stile coordinato e colore Nero/Text)
+            if(sGiorni > 0) {
+                list.innerHTML += `
+                    <div class="stat-row text-sciopero">
+                        <b>Sciopero</b>
+                        <b>${sGiorni} gg (${formattaMinuti(sMinuti)})</b>
+                    </div>`;
+            }
+
+            // Inserimento altri eventi (Riposo, Ferie, ecc.)
+            const ord = ['Riposo','Ferie','Malattia','104','Permesso','Congedo','Lp','Altro'];
+            ord.forEach(k => { 
+                if(counts[k]) list.innerHTML += `<div class="stat-row text-${k.toLowerCase()}"><b>${k}</b><b>${counts[k]}</b></div>`; 
+            });
+        }
+    };
+}
 
     // --- GIOCHI ---
     let clicks = 0; let timerClic;
@@ -589,4 +619,5 @@
 </script>
 </body>
 </html>
+
 
