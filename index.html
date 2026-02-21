@@ -124,7 +124,18 @@
         .is-today { border: 2px solid #000000 !important; }
         body.dark-mode .is-today { border-color: #ffffff !important; }
 
-        .has-sciopero::after { content: ""; position: absolute; top: 2px; right: 2px; width: 0; height: 0; border-style: solid; border-width: 0 8px 8px 0; border-color: transparent var(--text) transparent transparent; opacity: 0.8; }
+       .has-sciopero::after { 
+    content: ""; 
+    position: absolute; 
+    top: 0; 
+    right: 0; 
+    width: 0; 
+    height: 0; 
+    border-style: solid; 
+    border-width: 0 14px 14px 0; /* Ingrandito a 14px */
+    border-color: transparent var(--text) transparent transparent; 
+    opacity: 0.9; 
+}
 
         .bg-lavoro { background-color: var(--primary) !important; color: white !important; border:none; }
         .bg-lp { background-color: var(--lp) !important; color: white !important; border:none; }
@@ -578,3 +589,4 @@
 </script>
 </body>
 </html>
+
