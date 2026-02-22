@@ -550,27 +550,38 @@
     }
 
     function eliminaTurno(d) { if(confirm("Eliminare?")) db.transaction("turni", "readwrite").objectStore("turni").delete(d).onsuccess = () => renderCalendar(); }
-
+    
 function caricaStatistiche() {
     const meseMesso = `${currentViewDate.getFullYear()}-${String(currentViewDate.getMonth()+1).padStart(2,'0')}`;
-    let mGen = 0, mNotte = 0, mExtra = 0, counts = {}, sMinuti = 0, sGiorni = 0;
-
+    let mGen = 0, mNotte = 0, mExtra = 0, nNastri = 0, counts = {}, sMinuti = 0, sGiorni = 0, festiviLavorati = 0;
+    
     db.transaction("turni").objectStore("turni").openCursor().onsuccess = e => {
         const cursor = e.target.result;
         if (cursor) {
             if (cursor.value.data.startsWith(meseMesso)) {
-                const t = cursor.value;
+                const t = cursor.value, dt = new Date(t.data), fest = isFestivo(dt.getDate(), dt.getMonth(), dt.getFullYear());
                 if (t.tipo === 'Lavoro') {
+                    if(fest) festiviLavorati++;
                     const d1 = calcolaDettagli(t.i1, t.f1), 
                           d2 = calcolaDettagli(t.i2, t.f2), 
-                          de = calcolaDettagli(t.ei, t.ef),
+                          de = calcolaDettagli(t.ei, t.ef), 
                           ds = calcolaDettagli(t.si, t.sf);
                     
                     mGen += (d1.totale + d2.totale + de.totale); 
                     mNotte += (d1.notte + d2.notte + de.notte); 
                     mExtra += de.totale;
 
-                    // Calcolo Sciopero: se esistono orari di inizio e fine sciopero
+                    // Calcolo Nastri: stacco di almeno 60 minuti tra fine1 e inizio2
+                    if (t.f1 && t.i2) {
+                        let [hF1, mF1] = t.f1.split(':').map(Number);
+                        let [hI2, mI2] = t.i2.split(':').map(Number);
+                        let fine1 = hF1 * 60 + mF1;
+                        let inizio2 = hI2 * 60 + mI2;
+                        if (inizio2 < fine1) inizio2 += 1440; 
+                        if ((inizio2 - fine1) >= 60) { nNastri++; }
+                    }
+
+                    // Calcolo Scioperi
                     if(t.si && t.sf) { 
                         sGiorni++; 
                         sMinuti += ds.totale; 
@@ -581,16 +592,21 @@ function caricaStatistiche() {
             }
             cursor.continue();
         } else {
-            // Aggiorna le card in alto
+            // Aggiornamento Card Superiori
             document.getElementById('stat-tot-mese').innerText = formattaMinuti(mGen);
             document.getElementById('stat-diurno').innerText = formattaMinuti(mGen - mNotte);
             document.getElementById('stat-notte').innerText = formattaMinuti(mNotte);
             document.getElementById('stat-extra').innerText = formattaMinuti(mExtra);
             
+            // Aggiornamento Card Nastri (se presente nell'HTML)
+            if(document.getElementById('stat-nastri')) {
+                document.getElementById('stat-nastri').innerText = nNastri;
+            }
+
             const list = document.getElementById('lista-stat-eventi'); 
             list.innerHTML = "";
             
-            // Inserimento riga Sciopero (Stile coordinato e colore Nero/Text)
+            // Riga Sciopero (Nera/Testo)
             if(sGiorni > 0) {
                 list.innerHTML += `
                     <div class="stat-row text-sciopero">
@@ -599,7 +615,7 @@ function caricaStatistiche() {
                     </div>`;
             }
 
-            // Inserimento altri eventi (Riposo, Ferie, ecc.)
+            // Altri Eventi (Riposo, Ferie, ecc.)
             const ord = ['Riposo','Ferie','Malattia','104','Permesso','Congedo','Lp','Altro'];
             ord.forEach(k => { 
                 if(counts[k]) list.innerHTML += `<div class="stat-row text-${k.toLowerCase()}"><b>${k}</b><b>${counts[k]}</b></div>`; 
@@ -619,5 +635,6 @@ function caricaStatistiche() {
 </script>
 </body>
 </html>
+
 
 
