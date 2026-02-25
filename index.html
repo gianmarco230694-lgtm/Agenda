@@ -226,22 +226,23 @@
     <div id="container-gioco"></div>
 </div>
 
-<div class="app-container">
 <div id="hamburger-menu" onclick="event.stopPropagation()">
     <div class="ham-item" onclick="esportaPDF('mese'); chiudiHamburger();">📑 Scarica Mese (PDF)</div>
     <div class="ham-item" onclick="esportaPDF('anno'); chiudiHamburger();">📅 Scarica Anno (PDF)</div>
 </div>
 
 <div class="app-container">
-    <header style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px;" onclick="event.stopPropagation()">
-        <div style="display: flex; gap: 10px; margin-top: 5px;">
+    <header style="display: flex; align-items: flex-start; margin-bottom: 30px; position: relative;" onclick="event.stopPropagation()">
+        
+        <div style="display: flex; gap: 10px; margin-top: 5px; z-index: 10;">
             <button onclick="toggleHamburger(event)" style="background:var(--card); border:1px solid var(--border); padding:8px 12px; border-radius:12px; cursor:pointer;">☰</button>
             <button onclick="toggleDarkMode()" style="background:var(--card); border:1px solid var(--border); padding:8px 12px; border-radius:12px; cursor:pointer;">💡</button>
         </div>
 
-        <div class="brand-section" style="text-align: right; align-items: flex-end;">
+        <div class="brand-section" style="flex: 1; text-align: center; margin-right: 85px;">
             <h1 class="brand-title" onclick="attivaSalaGiochi()">Agenda.Lavoro</h1>
             <span class="brand-subtitle">il tuo compagno di viaggio</span>
+            <span class="brand-subtitle" style="display: block; font-size: 0.6rem; opacity: 0.7; margin-top: 5px; letter-spacing: 2px;">progettata da Petrelli</span>
         </div>
     </header>
 
@@ -680,6 +681,7 @@ function caricaStatistiche() {
 </script>
 </body>
 </html>
+
 
 
 
