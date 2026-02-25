@@ -227,6 +227,7 @@
 </div>
 
 <div id="hamburger-menu" onclick="event.stopPropagation()">
+    <div class="ham-item" onclick="toggleDarkMode(); chiudiHamburger();">💡 Cambia Tema (Dark/Light)</div>
     <div class="ham-item" onclick="esportaPDF('mese'); chiudiHamburger();">📑 Scarica Mese (PDF)</div>
     <div class="ham-item" onclick="esportaPDF('anno'); chiudiHamburger();">📅 Scarica Anno (PDF)</div>
 </div>
@@ -234,18 +235,16 @@
 <div class="app-container">
     <header style="display: flex; align-items: flex-start; margin-bottom: 30px; position: relative;" onclick="event.stopPropagation()">
         
-        <div style="display: flex; gap: 10px; margin-top: 5px; z-index: 10;">
+        <div style="position: absolute; left: 0; top: 5px; z-index: 10;">
             <button onclick="toggleHamburger(event)" style="background:var(--card); border:1px solid var(--border); padding:8px 12px; border-radius:12px; cursor:pointer;">☰</button>
-            <button onclick="toggleDarkMode()" style="background:var(--card); border:1px solid var(--border); padding:8px 12px; border-radius:12px; cursor:pointer;">💡</button>
         </div>
 
-        <div class="brand-section" style="flex: 1; text-align: center; margin-right: 85px;">
+        <div class="brand-section" style="flex: 1; text-align: center;">
             <h1 class="brand-title" onclick="attivaSalaGiochi()">Agenda.Lavoro</h1>
             <span class="brand-subtitle">il tuo compagno di viaggio</span>
             <span class="brand-subtitle" style="display: block; font-size: 0.6rem; opacity: 0.7; margin-top: 5px; letter-spacing: 2px;">progettata da Petrelli</span>
         </div>
     </header>
-
     <main id="page-log">
         <div class="cal-header" style="display: flex; justify-content: center; align-items: center; margin: 15px 0; gap: 20px;">
             <button onclick="changeMonth(-1)" style="background: none; border: none; color: var(--primary); font-size: 1.8rem; cursor: pointer; padding: 10px; line-height: 1;">❮</button>
@@ -372,8 +371,8 @@
     request.onsuccess = e => { db = e.target.result; init(); };
 
     function init() { if (localStorage.getItem('theme') === 'dark') toggleDarkMode(); renderCalendar(); initSwipe(); }
-
-    function toggleHamburger(e) {
+    
+function toggleHamburger(e) {
     e.stopPropagation();
     const m = document.getElementById('hamburger-menu');
     m.style.display = (m.style.display === 'block') ? 'none' : 'block';
@@ -383,6 +382,9 @@ function chiudiHamburger() {
     const m = document.getElementById('hamburger-menu');
     if (m) m.style.display = 'none';
 }
+
+// Chiude il menu se clicchi ovunque fuori
+document.addEventListener('click', chiudiHamburger);
 
 // Chiude il menu se clicchi fuori
 document.addEventListener('click', chiudiHamburger);
@@ -681,6 +683,7 @@ function caricaStatistiche() {
 </script>
 </body>
 </html>
+
 
 
 
