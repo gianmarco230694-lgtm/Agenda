@@ -184,7 +184,28 @@
         .log-part b { color: var(--primary); display: block; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 4px; }
         .log-time-badge { position: absolute; top: 12px; right: 12px; font-size: 0.7rem; font-weight: 800; color: var(--primary); background: rgba(26, 115, 232, 0.1); padding: 2px 6px; border-radius: 6px; text-align: right; }
 
-/* Stile Menu Hamburger a SINISTRA */
+/* Struttura Header a 3 colonne per evitare sovrapposizioni */
+header {
+    display: grid;
+    grid-template-columns: 80px 1fr 80px;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+/* Tasto Hamburger: Area di tocco maggiorata e risposta istantanea */
+.menu-btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 10px 14px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: var(--text);
+    touch-action: manipulation; /* Elimina il ritardo di 300ms su mobile */
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Menu a comparsa: Z-index altissimo per non finire sotto il calendario */
 #hamburger-menu {
     position: fixed;
     top: 70px;
@@ -195,8 +216,9 @@
     width: 220px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.15);
     display: none;
-    z-index: 2000;
+    z-index: 99999;
 }
+
 .ham-item {
     padding: 15px;
     border-bottom: 1px solid var(--border);
@@ -210,7 +232,6 @@
 }
 .ham-item:active { background: var(--bg); }
 .ham-item:last-child { border: none; }
-    </style>
 </head>
 <body>
 
@@ -227,29 +248,28 @@
 </div>
 
 <div id="hamburger-menu" onclick="event.stopPropagation()">
-    <div class="ham-item" onclick="toggleDarkMode(); chiudiHamburger();">💡 Cambia Tema (Dark/Light)</div>
+    <div class="ham-item" onclick="toggleDarkMode(); chiudiHamburger();">💡 Cambia Tema</div>
     <div class="ham-item" onclick="esportaPDF('mese'); chiudiHamburger();">📑 Scarica Mese (PDF)</div>
     <div class="ham-item" onclick="esportaPDF('anno'); chiudiHamburger();">📅 Scarica Anno (PDF)</div>
 </div>
 
 <div class="app-container">
-    <header style="display: flex; flex-direction: column; margin-bottom: 30px; position: relative;" onclick="event.stopPropagation()">
-        
-        <div style="display: flex; align-items: center; position: relative; width: 100%;">
-            <div style="position: absolute; left: 0; z-index: 10;">
-                <button onclick="toggleHamburger(event)" style="background:var(--card); border:1px solid var(--border); padding:8px 12px; border-radius:12px; cursor:pointer;">☰</button>
-            </div>
-<div style="flex: 1; text-align: center; z-index: 20;">
-    <h1 class="brand-title" onclick="attivaSalaGiochi()" style="margin: 0; cursor: pointer; display: inline-block; position: relative;">Agenda.Lavoro</h1>
-</div>
+    <header onclick="event.stopPropagation()">
+        <div style="display: flex; justify-content: flex-start;">
+            <button class="menu-btn" onclick="toggleHamburger(event)">☰</button>
         </div>
 
-        <div class="brand-section" style="text-align: right; margin-top: 5px; display: flex; flex-direction: column; align-items: flex-end;">
-            <span class="brand-subtitle">il tuo compagno di viaggio</span>
+        <div style="text-align: center;">
+            <h1 class="brand-title" onclick="attivaSalaGiochi()" style="margin: 0; cursor: pointer; display: inline-block;">Agenda.Lavoro</h1>
+        </div>
+
+        <div></div>
+
+        <div class="brand-section" style="grid-column: 1 / span 3; text-align: right; margin-top: 10px;">
+            <span class="brand-subtitle" style="display: block;">il tuo compagno di viaggio</span>
             <span class="brand-subtitle" style="display: block; font-size: 0.6rem; opacity: 0.7; margin-top: 5px; letter-spacing: 2px;">progettata da Petrelli</span>
         </div>
-    </header>
-    <main id="page-log">
+    </header>    <main id="page-log">
         <div class="cal-header" style="display: flex; justify-content: center; align-items: center; margin: 15px 0; gap: 20px;">
             <button onclick="changeMonth(-1)" style="background: none; border: none; color: var(--primary); font-size: 1.8rem; cursor: pointer; padding: 10px; line-height: 1;">❮</button>
             <h2 id="cal-month-title" style="margin: 0; min-width: 160px; text-align: center;">Mese Anno</h2>
@@ -376,22 +396,6 @@
 
     function init() { if (localStorage.getItem('theme') === 'dark') toggleDarkMode(); renderCalendar(); initSwipe(); }
     
-function toggleHamburger(e) {
-    e.stopPropagation();
-    const m = document.getElementById('hamburger-menu');
-    m.style.display = (m.style.display === 'block') ? 'none' : 'block';
-}
-
-function chiudiHamburger() {
-    const m = document.getElementById('hamburger-menu');
-    if (m) m.style.display = 'none';
-}
-
-// Chiude il menu se clicchi ovunque fuori
-document.addEventListener('click', chiudiHamburger);
-
-// Chiude il menu se clicchi fuori
-document.addEventListener('click', chiudiHamburger);
 
     function toggleDarkMode() { const isDark = document.body.classList.toggle('dark-mode'); localStorage.setItem('theme', isDark ? 'dark' : 'light'); }
 
@@ -445,32 +449,53 @@ document.addEventListener('click', chiudiHamburger);
     }
 
     // --- LOGICA PDF ---
-    async function esportaPDF(filtro) {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        const anno = currentViewDate.getFullYear();
-        const mese = String(currentViewDate.getMonth() + 1).padStart(2, '0');
-        const pref = filtro === 'mese' ? `${anno}-${mese}` : `${anno}`;
-        const titolo = filtro === 'mese' ? `Report Ore - ${mese}/${anno}` : `Report Ore - Anno ${anno}`;
+async function esportaPDF(filtro) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const anno = currentViewDate.getFullYear();
+    const mese = String(currentViewDate.getMonth() + 1).padStart(2, '0');
+    const pref = filtro === 'mese' ? `${anno}-${mese}` : `${anno}`;
+    const titolo = filtro === 'mese' ? `Report Ore - ${mese}/${anno}` : `Report Ore - Anno ${anno}`;
 
-        db.transaction("turni").objectStore("turni").getAll().onsuccess = e => {
-            const dati = e.target.result.filter(t => t.data.startsWith(pref)).sort((a,b) => a.data.localeCompare(b.data));
-            doc.setFontSize(18);
-            doc.setTextColor(26, 115, 232);
-            doc.text(titolo, 14, 20);
-            const righe = dati.map(t => {
-                const d1 = calcolaDettagli(t.i1, t.f1), d2 = calcolaDettagli(t.i2, t.f2), de = calcolaDettagli(t.ei, t.ef);
-                const tot = formattaMinuti(d1.totale + d2.totale + de.totale);
-                return [t.data, t.tipo, t.categoria || '', tot, (t.note || '').substring(0, 30)];
-            });
-            doc.autoTable({
-                head: [['Data', 'Tipo', 'Turno', 'Totale', 'Note']],
-                body: righe, startY: 30, theme: 'grid',
-                headStyles: { fillColor: [26, 115, 232] }, styles: { fontSize: 8 }
-            });
-            doc.save(`Agenda_${pref}.pdf`);
-        };
-    }
+    const tx = db.transaction("turni", "readonly");
+    const store = tx.objectStore("turni");
+    
+    store.getAll().onsuccess = e => {
+        // Filtra per anno o mese e ORDINA per data (fondamentale per precisione)
+        const dati = e.target.result
+            .filter(t => t.data.startsWith(pref))
+            .sort((a,b) => a.data.localeCompare(b.data));
+
+        if (dati.length === 0) {
+            alert("Nessun dato trovato per il periodo selezionato.");
+            return;
+        }
+
+        doc.setFontSize(18);
+        doc.setTextColor(26, 115, 232);
+        doc.text(titolo, 14, 20);
+        
+        const righe = dati.map(t => {
+            const d1 = calcolaDettagli(t.i1, t.f1);
+            const d2 = calcolaDettagli(t.i2, t.f2);
+            const de = calcolaDettagli(t.ei, t.ef);
+            const totMinuti = d1.totale + d2.totale + de.totale;
+            const dataGiorno = t.data.split('-').reverse().join('/');
+            return [dataGiorno, t.tipo, t.categoria || '', formattaMinuti(totMinuti), (t.note || '')];
+        });
+
+        doc.autoTable({
+            head: [['Data', 'Tipo', 'Turno', 'Totale', 'Note']],
+            body: righe, 
+            startY: 30, 
+            theme: 'grid',
+            styles: { fontSize: 8 },
+            columnStyles: { 4: { cellWidth: 'auto' } }
+        });
+        
+        doc.save(`Agenda_${pref}.pdf`);
+    };
+}
 
     // --- RESTO DEL CODICE NATIVO ---
     function toggleSciopero() {
@@ -676,17 +701,57 @@ function caricaStatistiche() {
     };
 }
 
-    // --- GIOCHI ---
-    let clicks = 0; let timerClic;
-    function attivaSalaGiochi() { clicks++; clearTimeout(timerClic); if (clicks === 4) { document.getElementById('sala-giochi').style.display = 'flex'; clicks = 0; } timerClic = setTimeout(() => { clicks = 0; }, 2000); }
-    function chiudiSalaGiochi() { document.getElementById('sala-giochi').style.display = 'none'; }
-    function tornaAlMenu() { document.getElementById('container-gioco').innerHTML = ''; document.getElementById('menu-principale-giochi').classList.remove('hidden'); }
-    function avviaSnake() { /* ... codice snake nativo ... */ }
-    function avviaSpaceInvaders() { /* ... codice invaders nativo ... */ }
-    function avviaTetris() { /* ... codice tetris nativo ... */ }
+            // --- GESTIONE MENU ---
+function toggleHamburger(e) {
+    if (e) e.stopPropagation();
+    const m = document.getElementById('hamburger-menu');
+    m.style.display = (m.style.display === 'block') ? 'none' : 'block';
+}
+
+function chiudiHamburger() {
+    const m = document.getElementById('hamburger-menu');
+    if (m) m.style.display = 'none';
+}
+
+// Un solo listener, pulito
+document.addEventListener('click', chiudiHamburger);
+
+// --- GESTIONE GIOCHI ---
+let clicks = 0; 
+let timerClic;
+
+function attivaSalaGiochi() { 
+    clicks++; 
+    clearTimeout(timerClic); 
+    if (clicks === 4) { 
+        document.getElementById('sala-giochi').style.display = 'flex'; 
+        clicks = 0; 
+    } 
+    timerClic = setTimeout(() => { clicks = 0; }, 2000); 
+}
+
+function chiudiSalaGiochi() { 
+    document.getElementById('sala-giochi').style.display = 'none'; 
+}
+
+function tornaAlMenu() {
+    document.getElementById('container-gioco').innerHTML = '';
+    const menuP = document.getElementById('menu-principale-giochi');
+    if(menuP) menuP.classList.remove('hidden');
+}
+
+// Qui sotto dovrai incollare i codici reali di Snake, Invaders e Tetris
+// che avevi nel file originale al posto dei commenti.
+function avviaSnake() { /* incolla qui il codice di snake */ }
+function avviaSpaceInvaders() { /* incolla qui il codice di invaders */ }
+function avviaTetris() { /* incolla qui il codice di tetris */ }
+            
+
+
 </script>
 </body>
 </html>
+
 
 
 
