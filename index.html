@@ -247,9 +247,9 @@
 
 <div class="app-container">
 <div id="hamburger-menu">
-    <div class="ham-item" onclick="toggleDarkMode();">💡 Cambia Tema</div>
-    <div class="ham-item" onclick="esportaPDF('mese');">📑 Scarica Mese (PDF)</div>
-    <div class="ham-item" onclick="esportaPDF('anno');">📅 Scarica Anno (PDF)</div>
+    <div class="ham-item" onclick="toggleDarkMode(); chiudiMenu();">💡 Cambia Tema</div>
+    <div class="ham-item" onclick="esportaPDF('mese'); chiudiMenu();">📑 Scarica Mese (PDF)</div>
+    <div class="ham-item" onclick="esportaPDF('anno'); chiudiMenu();">📅 Scarica Anno (PDF)</div>
 </div>
 
 <header style="display: grid; grid-template-columns: 80px 1fr 80px; align-items: center; margin-bottom: 30px;">
@@ -692,7 +692,31 @@ function caricaStatistiche() {
     function avviaSnake() { /* ... codice snake nativo ... */ }
     function avviaSpaceInvaders() { /* ... codice invaders nativo ... */ }
     function avviaTetris() { /* ... codice tetris nativo ... */ }
+    // Funzione per aprire/chiudere il menu
+function toggleHamburger(e) {
+    if (e) {
+        e.stopPropagation(); // Blocca la propagazione al resto della pagina
+    }
+    const menu = document.getElementById('hamburger-menu');
+    const isVisible = menu.style.display === 'block';
+    menu.style.display = isVisible ? 'none' : 'block';
+}
+
+// Funzione per chiudere il menu quando si clicca su una voce
+function chiudiMenu() {
+    document.getElementById('hamburger-menu').style.display = 'none';
+}
+
+// Chiudi il menu se l'utente clicca ovunque fuori dal menu stesso
+document.addEventListener('click', function(event) {
+    const menu = document.getElementById('hamburger-menu');
+    const btn = document.querySelector('.menu-btn');
+    if (menu.style.display === 'block' && !menu.contains(event.target) && !btn.contains(event.target)) {
+        menu.style.display = 'none';
+    }
+});
 </script>
 </body>
 </html>
+
 
