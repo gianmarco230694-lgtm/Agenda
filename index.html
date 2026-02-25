@@ -65,36 +65,7 @@
 
 .ham-item:active { background: var(--bg); }
 .ham-item:last-child { border: none; }
-        /* Stile Sala Giochi */
-        #sala-giochi {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--dark); z-index: 10000;
-            display: none; flex-direction: column; align-items: center; justify-content: center;
-            color: white; font-family: 'Montserrat', sans-serif;
-        }
 
-        .menu-giochi { text-align: center; width: 90%; max-width: 400px; }
-
-        .btn-gioco {
-            background: var(--card); color: var(--text);
-            border: 2px solid var(--primary); padding: 20px;
-            margin: 10px 0; width: 100%; border-radius: 20px;
-            font-weight: 800; cursor: pointer; font-size: 1rem;
-            display: flex; align-items: center; justify-content: center; gap: 15px;
-        }
-
-        .btn-gioco:active { transform: scale(0.95); }
-
-        .btn-chiudi-sala {
-            margin-top: 30px; background: var(--danger);
-            color: white; border: none; padding: 12px 25px;
-            border-radius: 50px; font-weight: 700; cursor: pointer;
-        }
-
-        canvas { 
-            background: #000; border: 3px solid var(--primary); 
-            border-radius: 10px; max-width: 95vw; max-height: 70vh; 
-        }
 
         .log-note { 
             font-size: 1rem !important;
@@ -246,6 +217,8 @@
 </div>
 
 <div class="app-container">
+<body>
+
 <div id="hamburger-menu">
     <div class="ham-item" onclick="toggleDarkMode(); chiudiMenu();">💡 Cambia Tema</div>
     <div class="ham-item" onclick="esportaPDF('mese'); chiudiMenu();">📑 Scarica Mese (PDF)</div>
@@ -256,13 +229,10 @@
     <div style="display: flex; justify-content: flex-start;">
         <button class="menu-btn" onclick="toggleHamburger(event)">☰</button>
     </div>
-
     <div style="text-align: center;">
-        <h1 class="brand-title" onclick="attivaSalaGiochi()" style="margin: 0; cursor: pointer;">Agenda.Lavoro</h1>
+        <h1 class="brand-title" style="margin: 0;">Agenda.Lavoro</h1>
     </div>
-
     <div></div>
-
     <div class="brand-section" style="grid-column: 1 / span 3; text-align: right; margin-top: 10px;">
         <span class="brand-subtitle">il tuo compagno di viaggio</span>
         <span class="brand-subtitle" style="display: block; font-size: 0.6rem; opacity: 0.7; margin-top: 5px; letter-spacing: 2px;">progettata da Petrelli</span>
@@ -452,33 +422,53 @@
         caricaRubrica();
     }
 
-    // --- LOGICA PDF ---
-    async function esportaPDF(filtro) {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        const anno = currentViewDate.getFullYear();
-        const mese = String(currentViewDate.getMonth() + 1).padStart(2, '0');
-        const pref = filtro === 'mese' ? `${anno}-${mese}` : `${anno}`;
-        const titolo = filtro === 'mese' ? `Report Ore - ${mese}/${anno}` : `Report Ore - Anno ${anno}`;
+    // --- FUNZIONE PDF POTENZIATA (Mese e Anno) ---
+async function esportaPDF(filtro) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const annoCorrente = currentViewDate.getFullYear();
+    const meseCorrente = String(currentViewDate.getMonth() + 1).padStart(2, '0');
+    
+    // Decidiamo cosa cercare nel database
+    const prefisso = (filtro === 'mese') ? `${annoCorrente}-${meseCorrente}` : `${annoCorrente}`;
+    const titoloReport = (filtro === 'mese') ? `Report Ore - ${meseCorrente}/${annoCorrente}` : `Report Ore - Anno ${annoCorrente}`;
 
-        db.transaction("turni").objectStore("turni").getAll().onsuccess = e => {
-            const dati = e.target.result.filter(t => t.data.startsWith(pref)).sort((a,b) => a.data.localeCompare(b.data));
-            doc.setFontSize(18);
-            doc.setTextColor(26, 115, 232);
-            doc.text(titolo, 14, 20);
-            const righe = dati.map(t => {
-                const d1 = calcolaDettagli(t.i1, t.f1), d2 = calcolaDettagli(t.i2, t.f2), de = calcolaDettagli(t.ei, t.ef);
-                const tot = formattaMinuti(d1.totale + d2.totale + de.totale);
-                return [t.data, t.tipo, t.categoria || '', tot, (t.note || '').substring(0, 30)];
-            });
-            doc.autoTable({
-                head: [['Data', 'Tipo', 'Turno', 'Totale', 'Note']],
-                body: righe, startY: 30, theme: 'grid',
-                headStyles: { fillColor: [26, 115, 232] }, styles: { fontSize: 8 }
-            });
-            doc.save(`Agenda_${pref}.pdf`);
-        };
-    }
+    db.transaction("turni").objectStore("turni").getAll().onsuccess = e => {
+        const tuttiIDati = e.target.result;
+        // Filtriamo i dati in base a Mese o Anno
+        const datiFiltrati = tuttiIDati
+            .filter(t => t.data.startsWith(prefisso))
+            .sort((a,b) => a.data.localeCompare(b.data));
+
+        if (datiFiltrati.length === 0) {
+            alert("Nessun dato trovato per questo periodo.");
+            return;
+        }
+
+        doc.setFontSize(18);
+        doc.setTextColor(26, 115, 232);
+        doc.text(titoloReport, 14, 20);
+
+        const righe = datiFiltrati.map(t => {
+            const d1 = calcolaDettagli(t.i1, t.f1);
+            const d2 = calcolaDettagli(t.i2, t.f2);
+            const de = calcolaDettagli(t.ei, t.ef);
+            const tot = formattaMinuti(d1.totale + d2.totale + de.totale);
+            return [t.data, t.tipo, t.categoria || '', tot, (t.note || '').substring(0, 30)];
+        });
+
+        doc.autoTable({
+            head: [['Data', 'Tipo', 'Turno', 'Totale', 'Note']],
+            body: righe,
+            startY: 30,
+            theme: 'grid',
+            headStyles: { fillColor: [26, 115, 232] },
+            styles: { fontSize: 8 }
+        });
+
+        doc.save(`Agenda_${prefisso}.pdf`);
+    };
+}
 
     // --- RESTO DEL CODICE NATIVO ---
     function toggleSciopero() {
@@ -684,14 +674,6 @@ function caricaStatistiche() {
     };
 }
 
-    // --- GIOCHI ---
-    let clicks = 0; let timerClic;
-    function attivaSalaGiochi() { clicks++; clearTimeout(timerClic); if (clicks === 4) { document.getElementById('sala-giochi').style.display = 'flex'; clicks = 0; } timerClic = setTimeout(() => { clicks = 0; }, 2000); }
-    function chiudiSalaGiochi() { document.getElementById('sala-giochi').style.display = 'none'; }
-    function tornaAlMenu() { document.getElementById('container-gioco').innerHTML = ''; document.getElementById('menu-principale-giochi').classList.remove('hidden'); }
-    function avviaSnake() { /* ... codice snake nativo ... */ }
-    function avviaSpaceInvaders() { /* ... codice invaders nativo ... */ }
-    function avviaTetris() { /* ... codice tetris nativo ... */ }
     // Funzione per aprire/chiudere il menu
 function toggleHamburger(e) {
     if (e) {
@@ -718,5 +700,6 @@ document.addEventListener('click', function(event) {
 </script>
 </body>
 </html>
+
 
 
