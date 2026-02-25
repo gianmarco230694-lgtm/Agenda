@@ -313,30 +313,24 @@
         </div>
     </main>
 
-    <main id="page-backup" class="hidden">
-        <section class="card">
-            <h3 style="margin-top:0; font-size:0.75rem; text-transform:uppercase; color:var(--primary);">Report PDF</h3>
-            <button class="btn-main" style="background:var(--bg); color:var(--text); border:1px solid var(--border); margin-bottom:12px; text-align:left; text-transform:none;" onclick="esportaPDF('mese')">📑 Scarica Mese Corrente (PDF)</button>
-            <button class="btn-main" style="background:var(--bg); color:var(--text); border:1px solid var(--border); margin-bottom:12px; text-align:left; text-transform:none;" onclick="esportaPDF('anno')">📅 Scarica Anno Corrente (PDF)</button>
-        </section>
+<main id="page-backup" class="hidden">
+    <section class="card">
+        <h3 style="margin-top:0; font-size:0.75rem; text-transform:uppercase; color:var(--primary); font-weight: 800;">Rubrica Contatti</h3>
+        <div style="display: flex; gap: 8px; margin-bottom: 15px;">
+            <input type="text" id="rubrica-nome" placeholder="Nome" style="margin-bottom:0; flex: 2;">
+            <input type="tel" id="rubrica-tel" placeholder="Numero" style="margin-bottom:0; flex: 2;">
+            <button class="btn-main" style="flex: 1; padding: 10px;" onclick="aggiungiContatto()">➕</button>
+        </div>
+        <div id="lista-contatti" style="max-height: 400px; overflow-y: auto;"></div>
+    </section>
+</main>
 
-        <section class="card">
-            <h3 style="margin-top:0; font-size:0.75rem; text-transform:uppercase; color:var(--primary);">Rubrica </h3>
-            <div style="display: flex; gap: 8px; margin-bottom: 15px;">
-                <input type="text" id="rubrica-nome" placeholder="Nome" style="margin-bottom:0; flex: 2;">
-                <input type="tel" id="rubrica-tel" placeholder="Numero" style="margin-bottom:0; flex: 2;">
-                <button class="btn-main" style="flex: 1; padding: 10px;" onclick="aggiungiContatto()">➕</button>
-            </div>
-            <div id="lista-contatti" style="max-height: 300px; overflow-y: auto;"></div>
-        </section>
-    </main>
-
-    <nav class="nav-bar">
-        <button class="nav-btn active" id="btn-log" onclick="switchPage('log')"><i>📅</i>Calendario</button>
-        <button class="nav-btn" id="btn-home" onclick="switchPage('home')"><i>➕</i>Inserisci</button>
-        <button class="nav-btn" id="btn-stats" onclick="switchPage('stats')"><i>📊</i>Statistiche</button>
-        <button class="nav-btn" id="btn-backup" onclick="switchPage('backup')"><i>⚙️</i>Backup</button>
-    </nav>
+<nav class="nav-bar">
+    <button class="nav-btn active" id="btn-log" onclick="switchPage('log')"><i>📅</i>Calendario</button>
+    <button class="nav-btn" id="btn-home" onclick="switchPage('home')"><i>➕</i>Inserisci</button>
+    <button class="nav-btn" id="btn-stats" onclick="switchPage('stats')"><i>📊</i>Statistiche</button>
+    <button class="nav-btn" id="btn-backup" onclick="switchPage('backup')"><i>📖</i>Rubrica</button>
+</nav>
 </div>
 
 <script>
@@ -688,6 +682,7 @@ document.addEventListener('click', function(event) {
 </script>
 </body>
 </html>
+
 
 
 
