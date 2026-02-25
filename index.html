@@ -67,18 +67,22 @@
 .ham-item:last-child { border: none; }
 
 
-        .log-note { 
-            font-size: 1rem !important;
-            font-family: 'Montserrat', sans-serif !important; 
-            font-weight: 500 !important;
-            line-height: 1.5 !important; 
-            color: var(--text) !important; 
-            white-space: pre-wrap !important; 
-            margin-top: 15px !important; 
-            border: none !important;      
-            background: none !important;   
-            padding: 0 !important;         
-        }
+.log-note {
+    font-size: 1rem !important;
+    font-family: 'Montserrat', sans-serif !important;
+    font-weight: 500 !important;
+    line-height: 1.5 !important;
+    color: var(--text) !important;
+    white-space: pre-wrap !important; 
+    margin-top: 15px !important;
+    border: none !important;
+    background: none !important;
+    padding: 0 !important;
+    
+    /* AGGIUNGI QUESTE DUE RIGHE QUI SOTTO */
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+}
 
         .label-sciopero-mini { 
             font-size: 0.85rem; 
@@ -200,6 +204,8 @@
         .log-part { background: var(--bg); padding: 12px; border-radius: 12px; border: 1px solid var(--border); font-size: 0.95rem; position: relative; }
         .log-part b { color: var(--primary); display: block; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 4px; }
         .log-time-badge { position: absolute; top: 12px; right: 12px; font-size: 0.7rem; font-weight: 800; color: var(--primary); background: rgba(26, 115, 232, 0.1); padding: 2px 6px; border-radius: 6px; text-align: right; }
+        /* Correzione per note lunghe nel dettaglio giorno */
+
     </style>
 </head>
 <body>
@@ -404,20 +410,19 @@
         caricaRubrica();
     }
 
-    // --- FUNZIONE PDF POTENZIATA (Mese e Anno) ---
+  // --- FUNZIONE PDF POTENZIATA (Mese e Anno) - VERSIONE CORRETTA ---
 async function esportaPDF(filtro) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     const annoCorrente = currentViewDate.getFullYear();
     const meseCorrente = String(currentViewDate.getMonth() + 1).padStart(2, '0');
     
-    // Decidiamo cosa cercare nel database
     const prefisso = (filtro === 'mese') ? `${annoCorrente}-${meseCorrente}` : `${annoCorrente}`;
     const titoloReport = (filtro === 'mese') ? `Report Ore - ${meseCorrente}/${annoCorrente}` : `Report Ore - Anno ${annoCorrente}`;
 
     db.transaction("turni").objectStore("turni").getAll().onsuccess = e => {
         const tuttiIDati = e.target.result;
-        // Filtriamo i dati in base a Mese o Anno
+        
         const datiFiltrati = tuttiIDati
             .filter(t => t.data.startsWith(prefisso))
             .sort((a,b) => a.data.localeCompare(b.data));
@@ -431,27 +436,46 @@ async function esportaPDF(filtro) {
         doc.setTextColor(26, 115, 232);
         doc.text(titoloReport, 14, 20);
 
+        // PUNTO 2: Mappatura senza limiti (rimosso .substring)
         const righe = datiFiltrati.map(t => {
             const d1 = calcolaDettagli(t.i1, t.f1);
             const d2 = calcolaDettagli(t.i2, t.f2);
             const de = calcolaDettagli(t.ei, t.ef);
             const tot = formattaMinuti(d1.totale + d2.totale + de.totale);
-            return [t.data, t.tipo, t.categoria || '', tot, (t.note || '').substring(0, 30)];
+            return [
+                t.data, 
+                t.tipo, 
+                t.categoria || '', 
+                tot, 
+                t.note || '' // Prende tutta la nota senza tagliarla
+            ];
         });
 
+        // PUNTO 3: Configurazione tabella con andata a capo (linebreak)
         doc.autoTable({
             head: [['Data', 'Tipo', 'Turno', 'Totale', 'Note']],
             body: righe,
             startY: 30,
             theme: 'grid',
             headStyles: { fillColor: [26, 115, 232] },
-            styles: { fontSize: 8 }
+            styles: { 
+                fontSize: 8,
+                overflow: 'linebreak', // Forza il testo ad andare a capo nella cella
+                cellPadding: 2,
+                valign: 'middle'
+            },
+            columnStyles: {
+                0: { cellWidth: 22 }, // Data
+                1: { cellWidth: 20 }, // Tipo
+                2: { cellWidth: 25 }, // Turno
+                3: { cellWidth: 18 }, // Totale
+                4: { cellWidth: 'auto' } // Note prende tutto lo spazio rimanente e va a capo
+            }
         });
 
         doc.save(`Agenda_${prefisso}.pdf`);
     };
 }
-
     // --- RESTO DEL CODICE NATIVO ---
     function toggleSciopero() {
         const isChecked = document.getElementById('check-sciopero').checked;
@@ -682,6 +706,7 @@ document.addEventListener('click', function(event) {
 </script>
 </body>
 </html>
+
 
 
 
