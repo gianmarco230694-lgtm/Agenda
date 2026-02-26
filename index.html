@@ -457,11 +457,11 @@ function caricaRubrica() {
             <a href="tel:${c.tel}" style="text-decoration: none; color: #1a73e8; font-size: 0.95rem; font-weight: 600; margin: 2px 0; display: inline-block;">
                 ${c.tel}
             </a>
-
-            ${c.note ? `
-                <div style="font-size: 0.85rem; color: #444; font-style: italic; background: rgba(0,0,0,0.05); padding: 8px; border-radius: 0 4px 4px 0; border-left: 3px solid var(--primary); margin-top: 4px; word-wrap: break-word; white-space: pre-wrap;">
-                    ${c.note}
-                </div>` : ''}
+            
+${c.note ? `
+    <div style="font-size: 0.8rem; color: #222; background: #f2f2f2; padding: 4px 8px; border-radius: 4px; border-left: 3px solid var(--primary); margin-top: 2px; word-wrap: break-word; white-space: pre-wrap; line-height: 1.2;">
+        ${c.note}
+    </div>` : ''}
             
             <div style="display: flex; justify-content: flex-end; gap: 15px; margin-top: 10px;">
                 <button onclick="preparaModifica(${c.id})" style="background: none; border: none; color: var(--primary); font-size: 0.75rem; cursor: pointer; font-weight: bold;">Modifica</button>
@@ -792,6 +792,7 @@ document.addEventListener('click', function(event) {
 </script>
 </body>
 </html>
+
 
 
 
