@@ -332,6 +332,11 @@
         <button class="btn-main" style="width: 100%; padding: 12px;" onclick="aggiungiContatto()">Salva in Rubrica ➕</button>
     </div>
 
+    <div style="margin-bottom: 15px;">
+    <input type="text" id="filtro-contatti" placeholder="Cerca nome, numero o matricola..." 
+           onkeyup="caricaRubrica()" 
+           style="width: 100%; padding: 10px; border: 2px solid var(--primary); border-radius: 8px; margin-bottom: 0;">
+</div>
     <div id="lista-contatti" style="max-height: 400px; overflow-y: auto;"></div>
 </section>
 </main>
@@ -415,26 +420,52 @@ function aggiungiContatto() {
 }
 
 function caricaRubrica() {
+    // 1. RIFERIMENTO ALLA LISTA (Codice Nativo)
     const lista = document.getElementById('lista-contatti');
+    if (!lista) return;
+
+    // 2. GESTIONE FILTRO (Nuovo Aggiornamento)
+    // Legge cosa scrivi nella barra di ricerca. Se è vuota, valoreFiltro sarà ""
+    const filtroElement = document.getElementById('filtro-contatti');
+    const valoreFiltro = filtroElement ? filtroElement.value.toLowerCase() : '';
+    
+    // 3. RECUPERO DATI (Codice Nativo)
     const rubrica = JSON.parse(localStorage.getItem('rubrica_contatti')) || [];
+    
+    // Svuota la lista prima di ridisegnarla (Codice Nativo)
     lista.innerHTML = '';
 
-    rubrica.forEach(c => {
+    // 4. LOGICA DI FILTRO GLOBALE (Nuovo Aggiornamento)
+    // Filtra per Nome, Telefono o Note (Matricole, ditte, ecc.)
+    const contattiFiltrati = rubrica.filter(c => {
+        const n = (c.nome || "").toLowerCase();
+        const t = (c.tel || "");
+        const nt = (c.note || "").toLowerCase();
+        // Ritorna vero se il filtro è contenuto in uno dei tre campi
+        return n.includes(valoreFiltro) || t.includes(valoreFiltro) || nt.includes(valoreFiltro);
+    });
+
+    // 5. COSTRUZIONE DELLA LISTA (Codice Nativo + Grafica Aggiornata)
+    contattiFiltrati.forEach(c => {
         const div = document.createElement('div');
-        div.style = "padding: 12px; border-bottom: 1px solid rgba(0,0,0,0.1); display: flex; flex-direction: column;";
+        // Layout pulito e spaziato
+        div.style = "padding: 12px; border-bottom: 1px solid rgba(0,0,0,0.1); display: flex; flex-direction: column; gap: 4px;";
         
         div.innerHTML = `
-            <div style="font-weight: bold; color: var(--primary);">${c.nome}</div>
+            <div style="font-weight: bold; color: var(--primary); font-size: 1rem;">${c.nome}</div>
             
-            <a href="tel:${c.tel}" style="text-decoration: none; color: #1a73e8; font-weight: 600; margin: 4px 0; display: inline-block;">
-                📞 ${c.tel}
+            <a href="tel:${c.tel}" style="text-decoration: none; color: #1a73e8; font-size: 0.95rem; font-weight: 600; margin: 2px 0; display: inline-block;">
+                ${c.tel}
             </a>
 
-            ${c.note ? `<div style="font-size: 0.8rem; color: #666; font-style: italic; background: #f9f9f9; padding: 6px; border-radius: 4px; margin-top: 4px; word-wrap: break-word;"> ${c.note}</div>` : ''}
+            ${c.note ? `
+                <div style="font-size: 0.85rem; color: #444; font-style: italic; background: rgba(0,0,0,0.05); padding: 8px; border-radius: 0 4px 4px 0; border-left: 3px solid var(--primary); margin-top: 4px; word-wrap: break-word; white-space: pre-wrap;">
+                    ${c.note}
+                </div>` : ''}
             
-            <div style="display: flex; justify-content: flex-end; gap: 15px; margin-top: 8px;">
-                <button onclick="preparaModifica(${c.id})" style="background: none; border: none; color: var(--primary); font-size: 0.75rem; cursor: pointer; font-weight: bold;"> Modifica</button>
-                <button onclick="eliminaContatto(${c.id})" style="background: none; border: none; color: red; font-size: 0.75rem; cursor: pointer; opacity: 0.7;"> Elimina</button>
+            <div style="display: flex; justify-content: flex-end; gap: 15px; margin-top: 10px;">
+                <button onclick="preparaModifica(${c.id})" style="background: none; border: none; color: var(--primary); font-size: 0.75rem; cursor: pointer; font-weight: bold;">Modifica</button>
+                <button onclick="eliminaContatto(${c.id})" style="background: none; border: none; color: red; font-size: 0.75rem; cursor: pointer; opacity: 0.7;">Elimina</button>
             </div>
         `;
         lista.appendChild(div);
@@ -761,6 +792,7 @@ document.addEventListener('click', function(event) {
 </script>
 </body>
 </html>
+
 
 
 
