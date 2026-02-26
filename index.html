@@ -320,24 +320,27 @@
     </main>
 
 <main id="page-backup" class="hidden">
-<section class="card">
-    <h3 style="margin-top:0; font-size:0.75rem; text-transform:uppercase; color:var(--primary); font-weight: 800;">Rubrica Contatti</h3>
+<section class="card" style="margin-bottom: 15px;">
+    <h3 style="margin-top:0; font-size:0.75rem; text-transform:uppercase; color:var(--primary); font-weight: 800;">Nuovo Contatto / Cerca</h3>
     
     <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
         <div style="display: flex; gap: 8px;">
             <input type="text" id="rubrica-nome" placeholder="Nome" style="margin-bottom:0; flex: 1;">
             <input type="tel" id="rubrica-tel" placeholder="Numero" style="margin-bottom:0; flex: 1;">
         </div>
-        <textarea id="rubrica-note" placeholder="Note (es. ditta, orari, ruolo...)" style="margin-bottom:0; height: 60px; resize: none; font-family: inherit; padding: 10px; border: 1px solid #ddd; border-radius: 8px;"></textarea>
-        <button class="btn-main" style="width: 100%; padding: 12px;" onclick="aggiungiContatto()">Salva in Rubrica ➕</button>
+        <textarea id="rubrica-note" placeholder="Note (matricola, ditta...)" style="margin-bottom:0; height: 50px; resize: none;"></textarea>
+        <button class="btn-main" onclick="aggiungiContatto()">Salva in Rubrica ➕</button>
     </div>
 
-    <div style="margin-bottom: 15px;">
-    <input type="text" id="filtro-contatti" placeholder="Cerca nome, numero o matricola..." 
+    <input type="text" id="filtro-contatti" placeholder="🔍 Cerca nome o matricola..." 
            onkeyup="caricaRubrica()" 
-           style="width: 100%; padding: 10px; border: 2px solid var(--primary); border-radius: 8px; margin-bottom: 0;">
-</div>
-    <div id="lista-contatti" style="max-height: 400px; overflow-y: auto;"></div>
+           style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 0;">
+</section>
+
+<section class="card">
+    <h3 style="margin-top:0; font-size:0.75rem; text-transform:uppercase; color:var(--primary); font-weight: 800;">I tuoi Contatti</h3>
+    <div id="lista-contatti" style="max-height: 500px; overflow-y: auto;">
+        </div>
 </section>
 </main>
 
@@ -455,11 +458,11 @@ function caricaRubrica() {
             <div style="font-weight: bold; color: var(--primary); font-size: 1rem;">${c.nome}</div>
             
             <a href="tel:${c.tel}" style="text-decoration: none; color: #1a73e8; font-size: 0.95rem; font-weight: 600; margin: 2px 0; display: inline-block;">
-                ${c.tel}
+               📞 ${c.tel}
             </a>
             
 ${c.note ? `
-    <div style="font-size: 0.8rem; color: #222; background: #f2f2f2; padding: 4px 8px; border-radius: 4px; border-left: 3px solid var(--primary); margin-top: 2px; word-wrap: break-word; white-space: pre-wrap; line-height: 1.2;">
+    <div style="font-size: 0.8rem; color: #222; background: #f2f2f2; padding: 2px 4px; border-radius: 4px; border-left: 3px solid var(--primary); margin-top: 2px; word-wrap: break-word; white-space: pre-wrap; line-height: 1.2;">
         ${c.note}
     </div>` : ''}
             
@@ -792,6 +795,7 @@ document.addEventListener('click', function(event) {
 </script>
 </body>
 </html>
+
 
 
 
