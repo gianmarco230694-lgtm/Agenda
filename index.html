@@ -320,15 +320,20 @@
     </main>
 
 <main id="page-backup" class="hidden">
-    <section class="card">
-        <h3 style="margin-top:0; font-size:0.75rem; text-transform:uppercase; color:var(--primary); font-weight: 800;">Rubrica Contatti</h3>
-        <div style="display: flex; gap: 8px; margin-bottom: 15px;">
-            <input type="text" id="rubrica-nome" placeholder="Nome" style="margin-bottom:0; flex: 2;">
-            <input type="tel" id="rubrica-tel" placeholder="Numero" style="margin-bottom:0; flex: 2;">
-            <button class="btn-main" style="flex: 1; padding: 10px;" onclick="aggiungiContatto()">➕</button>
+<section class="card">
+    <h3 style="margin-top:0; font-size:0.75rem; text-transform:uppercase; color:var(--primary); font-weight: 800;">Rubrica Contatti</h3>
+    
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+        <div style="display: flex; gap: 8px;">
+            <input type="text" id="rubrica-nome" placeholder="Nome" style="margin-bottom:0; flex: 1;">
+            <input type="tel" id="rubrica-tel" placeholder="Numero" style="margin-bottom:0; flex: 1;">
         </div>
-        <div id="lista-contatti" style="max-height: 400px; overflow-y: auto;"></div>
-    </section>
+        <textarea id="rubrica-note" placeholder="Note (es. ditta, orari, ruolo...)" style="margin-bottom:0; height: 60px; resize: none; font-family: inherit; padding: 10px; border: 1px solid #ddd; border-radius: 8px;"></textarea>
+        <button class="btn-main" style="width: 100%; padding: 12px;" onclick="aggiungiContatto()">Salva in Rubrica ➕</button>
+    </div>
+
+    <div id="lista-contatti" style="max-height: 400px; overflow-y: auto;"></div>
+</section>
 </main>
 
 <nav class="nav-bar">
@@ -375,40 +380,90 @@
     }
 
     // --- LOGICA RUBRICA ---
-    function aggiungiContatto() {
-        const nome = document.getElementById('rubrica-nome').value;
-        const tel = document.getElementById('rubrica-tel').value;
-        if(!nome || !tel) return alert("Inserisci nome e numero!");
-        let rubrica = JSON.parse(localStorage.getItem('rubrica_tranvieri') || "[]");
-        rubrica.push({ nome, tel });
-        localStorage.setItem('rubrica_tranvieri', JSON.stringify(rubrica));
-        document.getElementById('rubrica-nome').value = "";
-        document.getElementById('rubrica-tel').value = "";
-        caricaRubrica();
+    
+function aggiungiContatto() {
+    const nome = document.getElementById('rubrica-nome').value.trim();
+    const tel = document.getElementById('rubrica-tel').value.trim();
+    const note = document.getElementById('rubrica-note').value.trim(); // <--- Nuova riga
+
+    if (!nome || !tel) {
+        alert("Inserisci almeno Nome e Numero");
+        return;
     }
 
-    function caricaRubrica() {
-        const lista = document.getElementById('lista-contatti');
-        const rubrica = JSON.parse(localStorage.getItem('rubrica_tranvieri') || "[]");
-        lista.innerHTML = "";
-        rubrica.sort((a,b) => a.nome.localeCompare(b.nome)).forEach((c, index) => {
-            lista.innerHTML += `
-                <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 5px; border-bottom:1px solid var(--border);">
-                    <div>
-                        <b style="display:block; font-size:1rem; color:var(--text);">${c.nome}</b>
-                        <a href="tel:${c.tel}" style="color:var(--primary); text-decoration:none; font-size:0.95rem; font-weight:600;">${c.tel}</a>
-                    </div>
-                    <button onclick="eliminaContatto(${index})" style="background:none; border:none; cursor:pointer; font-size:1.2rem; padding:10px;">🗑️</button>
-                </div>`;
-        });
-    }
+    const nuovoContatto = {
+        id: Date.now(), // Usiamo l'ora per creare un ID unico utile per la modifica
+        nome: nome,
+        tel: tel,
+        note: note // <--- Salviamo la nota
+    };
 
-    function eliminaContatto(index) {
-        let rubrica = JSON.parse(localStorage.getItem('rubrica_tranvieri') || "[]");
-        rubrica.splice(index, 1);
-        localStorage.setItem('rubrica_tranvieri', JSON.stringify(rubrica));
-        caricaRubrica();
+    let rubrica = JSON.parse(localStorage.getItem('rubrica_contatti')) || [];
+    rubrica.push(nuovoContatto);
+    
+    // Ordina dalla A alla Z
+    rubrica.sort((a, b) => a.nome.localeCompare(b.nome));
+    
+    localStorage.setItem('rubrica_contatti', JSON.stringify(rubrica));
+
+    // Pulisce tutti i campi, note incluse
+    document.getElementById('rubrica-nome').value = '';
+    document.getElementById('rubrica-tel').value = '';
+    document.getElementById('rubrica-note').value = '';
+
+    caricaRubrica(); // Richiama la tua funzione per aggiornare la lista
+}
+
+function caricaRubrica() {
+    const lista = document.getElementById('lista-contatti');
+    const rubrica = JSON.parse(localStorage.getItem('rubrica_contatti')) || [];
+    lista.innerHTML = '';
+
+    rubrica.forEach(c => {
+        const div = document.createElement('div');
+        div.style = "padding: 12px; border-bottom: 1px solid rgba(0,0,0,0.1); display: flex; flex-direction: column;";
+        
+        div.innerHTML = `
+            <div style="font-weight: bold; color: var(--primary);">${c.nome}</div>
+            
+            <a href="tel:${c.tel}" style="text-decoration: none; color: #1a73e8; font-weight: 600; margin: 4px 0; display: inline-block;">
+                📞 ${c.tel}
+            </a>
+
+            ${c.note ? `<div style="font-size: 0.8rem; color: #666; font-style: italic; background: #f9f9f9; padding: 6px; border-radius: 4px; margin-top: 4px; word-wrap: break-word;">📝 ${c.note}</div>` : ''}
+            
+            <div style="display: flex; justify-content: flex-end; gap: 15px; margin-top: 8px;">
+                <button onclick="preparaModifica(${c.id})" style="background: none; border: none; color: var(--primary); font-size: 0.75rem; cursor: pointer; font-weight: bold;">✏️ Modifica</button>
+                <button onclick="eliminaContatto(${c.id})" style="background: none; border: none; color: red; font-size: 0.75rem; cursor: pointer; opacity: 0.7;">🗑️ Elimina</button>
+            </div>
+        `;
+        lista.appendChild(div);
+    });
+}
+    
+function eliminaContatto(id, silenzioso = false) {
+    if (!silenzioso && !confirm("Vuoi eliminare questo contatto?")) return;
+
+    let rubrica = JSON.parse(localStorage.getItem('rubrica_contatti')) || [];
+    rubrica = rubrica.filter(c => c.id !== id);
+    localStorage.setItem('rubrica_contatti', JSON.stringify(rubrica));
+    caricaRubrica();
+}
+
+    function preparaModifica(id) {
+    let rubrica = JSON.parse(localStorage.getItem('rubrica_contatti')) || [];
+    const contatto = rubrica.find(c => c.id === id);
+
+    if (contatto) {
+        // Riporta i dati nei campi in alto
+        document.getElementById('rubrica-nome').value = contatto.nome;
+        document.getElementById('rubrica-tel').value = contatto.tel;
+        document.getElementById('rubrica-note').value = contatto.note || '';
+        
+        // Rimuove il vecchio contatto: quando premerai "Salva", verrà creato quello nuovo aggiornato
+        eliminaContatto(id, true); 
     }
+}
 
   // --- FUNZIONE PDF POTENZIATA (Mese e Anno) - VERSIONE CORRETTA ---
 async function esportaPDF(filtro) {
@@ -706,6 +761,7 @@ document.addEventListener('click', function(event) {
 </script>
 </body>
 </html>
+
 
 
 
