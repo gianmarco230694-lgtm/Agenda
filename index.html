@@ -430,11 +430,11 @@ function caricaRubrica() {
                 📞 ${c.tel}
             </a>
 
-            ${c.note ? `<div style="font-size: 0.8rem; color: #666; font-style: italic; background: #f9f9f9; padding: 6px; border-radius: 4px; margin-top: 4px; word-wrap: break-word;">📝 ${c.note}</div>` : ''}
+            ${c.note ? `<div style="font-size: 0.8rem; color: #666; font-style: italic; background: #f9f9f9; padding: 6px; border-radius: 4px; margin-top: 4px; word-wrap: break-word;"> ${c.note}</div>` : ''}
             
             <div style="display: flex; justify-content: flex-end; gap: 15px; margin-top: 8px;">
-                <button onclick="preparaModifica(${c.id})" style="background: none; border: none; color: var(--primary); font-size: 0.75rem; cursor: pointer; font-weight: bold;">✏️ Modifica</button>
-                <button onclick="eliminaContatto(${c.id})" style="background: none; border: none; color: red; font-size: 0.75rem; cursor: pointer; opacity: 0.7;">🗑️ Elimina</button>
+                <button onclick="preparaModifica(${c.id})" style="background: none; border: none; color: var(--primary); font-size: 0.75rem; cursor: pointer; font-weight: bold;"> Modifica</button>
+                <button onclick="eliminaContatto(${c.id})" style="background: none; border: none; color: red; font-size: 0.75rem; cursor: pointer; opacity: 0.7;"> Elimina</button>
             </div>
         `;
         lista.appendChild(div);
@@ -761,6 +761,7 @@ document.addEventListener('click', function(event) {
 </script>
 </body>
 </html>
+
 
 
 
