@@ -28,21 +28,22 @@
     border-radius: 4px;
     box-shadow: 2px 2px 10px rgba(0,0,0,0.05);
     position: relative;
-    /* --- AGGIUNTE PER IL TELEFONO --- */
-    box-sizing: border-box; 
+    box-sizing: border-box; /* Sicurezza per il layout */
     width: 100%;
-    word-wrap: break-word;
+    cursor: pointer; /* Fa capire che puoi cliccarci sopra */
 }
 
 .data-nota {
-    font-size: 0.7rem;
-    color: #a16207;
+    font-size: 0.9rem; /* Più grande */
+    font-weight: 800;  /* Più marcata */
+    color: #451a03;    /* Colore scuro, molto più leggibile */
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
 }
 
 .azioni-nota {
     display: flex;
+    justify-content: flex-end; /* Cestino a destra */
     gap: 10px;
     margin-top: 10px;
 }
@@ -879,29 +880,42 @@ function caricaNoteLibere() {
     const contenitore = document.getElementById('elenco-note-libere');
     let note = JSON.parse(localStorage.getItem('mie_note_libere')) || [];
 
-    contenitore.innerHTML = ""; // Puliamo tutto prima di ricaricare
+    contenitore.innerHTML = ""; 
 
     note.forEach(nota => {
-        contenitore.innerHTML += `
-            <div class="post-it">
-                <span class="data-nota">📅 ${nota.data}</span>
-                <p style="margin: 5px 0; color: #451a03; white-space: pre-wrap;">${nota.testo}</p>
-                <div class="azioni-nota">
-                    <button onclick="modificaNota(${nota.id})" style="background:#eab308; border:none; border-radius:4px; padding:5px 10px; cursor:pointer;">✏️ Modifica</button>
-                    <button onclick="eliminaNota(${nota.id})" style="background:#ef4444; color:white; border:none; border-radius:4px; padding:5px 10px; cursor:pointer;">🗑️ Elimina</button>
-                </div>
+        const div = document.createElement('div');
+        div.className = "post-it";
+        // Cliccando ovunque sulla nota, si apre per la modifica
+        div.onclick = () => modificaNota(nota.id);
+
+        div.innerHTML = `
+            <span class="data-nota">📅 ${nota.data}</span>
+            <p style="margin: 5px 0; color: #451a03; white-space: pre-wrap; font-size: 1.05rem;">${nota.testo}</p>
+            <div class="azioni-nota">
+                <button onclick="event.stopPropagation(); eliminaNota(${nota.id})" style="background:#ef4444; color:white; border:none; border-radius:6px; padding:8px 12px; cursor:pointer; font-weight:bold;">🗑️ Elimina</button>
             </div>
         `;
+        contenitore.appendChild(div);
     });
 }
 
 // 4. ELIMINA UNA NOTA
-function eliminaNota(id) {
-    if (confirm("Vuoi davvero buttare questa nota? 🗑️")) {
-        let note = JSON.parse(localStorage.getItem('mie_note_libere')) || [];
+function modificaNota(id) {
+    let note = JSON.parse(localStorage.getItem('mie_note_libere')) || [];
+    const notaDaModificare = note.find(n => n.id === id);
+    
+    if (notaDaModificare) {
+        // Riporta il testo nel riquadro bianco in alto
+        document.getElementById('testo-nota').value = notaDaModificare.testo;
+        
+        // La togliamo dalla lista: se premi "Salva" verrà creata come nuova (in cima)
         note = note.filter(n => n.id !== id);
         localStorage.setItem('mie_note_libere', JSON.stringify(note));
-        caricaNoteLibere();
+        
+        caricaNoteLibere(); // Aggiorna la lista sotto
+        
+        // Torna su col cursore per iniziare a scrivere/leggere
+        document.getElementById('schermata-note').scrollTo({top: 0, behavior: 'smooth'});
     }
 }
 
@@ -923,6 +937,7 @@ function modificaNota(id) {
 </script>
 </body>
 </html>
+
 
 
 
