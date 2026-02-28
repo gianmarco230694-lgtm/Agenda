@@ -216,7 +216,32 @@
 
         input[type="time"] { width: 100%; padding: 10px 5px; font-size: 0.9rem; text-align: center; appearance: none; }
         label { font-size: 0.65rem; font-weight: 700; opacity: 0.5; text-transform: uppercase; margin-bottom: 8px; display: block; letter-spacing: 1px; }
-        input, select, textarea { width: 100%; min-height: 50px; padding: 12px; margin-bottom: 15px; border: 1px solid var(--border); border-radius: 14px; background: var(--bg); color: var(--text); font-family: inherit; box-sizing: border-box; font-size: 1rem; }
+       input, select, textarea { 
+    width: 100%; 
+    min-height: 50px; 
+    padding: 12px; 
+    margin-bottom: 15px; 
+    border: 1px solid var(--border); 
+    border-radius: 14px; 
+    background: var(--card); 
+    color: var(--text); 
+    font-family: inherit; 
+    box-sizing: border-box; 
+    font-size: 1rem; 
+}
+
+/* Fix per scritte leggibili in Dark Mode */
+body.dark-mode input, 
+body.dark-mode select, 
+body.dark-mode textarea {
+    background: #2d3748 !important;
+    color: #ffffff !important;
+    border-color: #4a5568;
+}
+
+body.dark-mode ::placeholder {
+    color: #cbd5e0;
+}
         .btn-main { background: var(--primary); color: white; width: 100%; padding: 18px; border: none; border-radius: 16px; font-weight: 700; font-size: 0.9rem; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
         
         .divider-pro { text-align: center; margin: 25px 0 15px; position: relative; display: flex; align-items: center; justify-content: center; }
@@ -388,10 +413,11 @@
         <button onclick="chiudiNote()" style="background:#854d0e; color:white; border:none; padding:10px 15px; border-radius:8px; cursor:pointer; font-weight:bold;">CHIUDI X</button>
     </div>
 
-    <div class="card" style="background:white; padding:15px; border-radius:12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom:20px;">
-       <textarea id="testo-nota" placeholder="Scrivi qui il tuo appunto..." style="width:100%; height:120px; border:none; outline:none; font-size:1.1rem; resize:none; background:transparent; box-sizing:border-box;"></textarea>
-        <button onclick="salvaNotaLibera()" id="btn-salva-nota" style="width:100%; background:#eab308; color:#451a03; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer; margin-top:10px;">SALVA NOTA 💾</button>
-    </div>
+<div class="card" style="background:white; padding:15px; border-radius:12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom:20px;">
+   <textarea id="testo-nota" placeholder="Scrivi qui il tuo appunto..." 
+             style="width:100%; height:120px; border:none; outline:none; font-size:1.1rem; resize:none; background:transparent; box-sizing:border-box; color: #451a03;"></textarea>
+    <button onclick="salvaNotaLibera()" id="btn-salva-nota" style="width:100%; background:#eab308; color:#451a03; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer; margin-top:10px;">SALVA NOTA </button>
+</div>
 
     <div id="elenco-note-libere">
         </div>
@@ -838,105 +864,75 @@ document.addEventListener('click', function(event) {
     }
 });
 
-    // 1. APRI E CHIUDI LA SCHERMATA
 function apriNote() {
     document.getElementById('schermata-note').style.display = 'block';
-    caricaNoteLibere(); // Appena apre, mostra le note salvate
+    // Fix dinamico colore testo in base al tema
+    const areaTesto = document.getElementById('testo-nota');
+    areaTesto.style.color = document.body.classList.contains('dark-mode') ? 'white' : '#451a03';
+    caricaNoteLibere();
 }
 
 function chiudiNote() {
     document.getElementById('schermata-note').style.display = 'none';
 }
 
-// 2. SALVA UNA NOTA
 function salvaNotaLibera() {
     const areaTesto = document.getElementById('testo-nota');
     const testo = areaTesto.value.trim();
+    if (testo === "") { alert("Scrivi qualcosa! 😉"); return; }
 
-    if (testo === "") {
-        alert("Scrivi qualcosa prima di salvare! 😉");
-        return;
-    }
-
-    // Recuperiamo le note vecchie o creiamo un array vuoto
     let note = JSON.parse(localStorage.getItem('mie_note_libere')) || [];
-
-    // Creiamo l'oggetto nota con la data di oggi
-    const nuovaNota = {
-        id: Date.now(),
-        testo: testo,
-        data: new Date().toLocaleString('it-IT')
-    };
-
-    note.unshift(nuovaNota); // Mette la più recente in alto
+    const nuovaNota = { id: Date.now(), testo: testo, data: new Date().toLocaleString('it-IT') };
+    note.unshift(nuovaNota);
     localStorage.setItem('mie_note_libere', JSON.stringify(note));
-
-    areaTesto.value = ""; // Pulisce il campo
-    caricaNoteLibere();   // Aggiorna la lista sotto
+    areaTesto.value = "";
+    caricaNoteLibere();
 }
 
-// 3. MOSTRA LE NOTE SALVATE
 function caricaNoteLibere() {
     const contenitore = document.getElementById('elenco-note-libere');
     let note = JSON.parse(localStorage.getItem('mie_note_libere')) || [];
-
     contenitore.innerHTML = ""; 
-
     note.forEach(nota => {
         const div = document.createElement('div');
         div.className = "post-it";
-        // Cliccando ovunque sulla nota, si apre per la modifica
         div.onclick = () => modificaNota(nota.id);
-
         div.innerHTML = `
             <span class="data-nota">📅 ${nota.data}</span>
-            <p style="margin: 5px 0; color: #451a03; white-space: pre-wrap; font-size: 1.05rem;">${nota.testo}</p>
+            <p style="margin: 5px 0; color: #451a03; white-space: pre-wrap; font-size: 1.05rem; word-wrap: break-word;">${nota.testo}</p>
             <div class="azioni-nota">
-                <button onclick="event.stopPropagation(); eliminaNota(${nota.id})" style="background:#ef4444; color:white; border:none; border-radius:6px; padding:8px 12px; cursor:pointer; font-weight:bold;">🗑️ Elimina</button>
-            </div>
-        `;
+                <button onclick="event.stopPropagation(); eliminaNota(${nota.id})" style="background:#ef4444; color:white; border:none; border-radius:6px; padding:8px 12px; cursor:pointer; font-weight:bold;">🗑️</button>
+            </div>`;
         contenitore.appendChild(div);
     });
 }
 
-// 4. ELIMINA UNA NOTA
-function modificaNota(id) {
-    let note = JSON.parse(localStorage.getItem('mie_note_libere')) || [];
-    const notaDaModificare = note.find(n => n.id === id);
-    
-    if (notaDaModificare) {
-        // Riporta il testo nel riquadro bianco in alto
-        document.getElementById('testo-nota').value = notaDaModificare.testo;
-        
-        // La togliamo dalla lista: se premi "Salva" verrà creata come nuova (in cima)
-        note = note.filter(n => n.id !== id);
-        localStorage.setItem('mie_note_libere', JSON.stringify(note));
-        
-        caricaNoteLibere(); // Aggiorna la lista sotto
-        
-        // Torna su col cursore per iniziare a scrivere/leggere
-        document.getElementById('schermata-note').scrollTo({top: 0, behavior: 'smooth'});
-    }
-}
-
-// 5. MODIFICA UNA NOTA (La riporta su per correggerla)
-function modificaNota(id) {
-    let note = JSON.parse(localStorage.getItem('mie_note_libere')) || [];
-    const notaDaModificare = note.find(n => n.id === id);
-    
-    if (notaDaModificare) {
-        document.getElementById('testo-nota').value = notaDaModificare.testo;
-        // Eliminiamo la vecchia versione così quando salva crea quella nuova aggiornata
+function eliminaNota(id) {
+    if(confirm("Eliminare la nota?")) {
+        let note = JSON.parse(localStorage.getItem('mie_note_libere')) || [];
         note = note.filter(n => n.id !== id);
         localStorage.setItem('mie_note_libere', JSON.stringify(note));
         caricaNoteLibere();
-        // Riporta lo scroll in alto per scrivere
-        document.getElementById('schermata-note').scrollTo(0,0);
+    }
+}
+
+function modificaNota(id) {
+    let note = JSON.parse(localStorage.getItem('mie_note_libere')) || [];
+    const nota = note.find(n => n.id === id);
+    if (nota) {
+        const areaTesto = document.getElementById('testo-nota');
+        areaTesto.value = nota.testo;
+        areaTesto.style.color = document.body.classList.contains('dark-mode') ? 'white' : '#451a03';
+        note = note.filter(n => n.id !== id);
+        localStorage.setItem('mie_note_libere', JSON.stringify(note));
+        caricaNoteLibere();
+        document.getElementById('schermata-note').scrollTo({top: 0, behavior: 'smooth'});
     }
 }
 </script>
 </body>
 </html>
+
 
 
 
