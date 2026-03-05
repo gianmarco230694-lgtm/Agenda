@@ -14,7 +14,8 @@
     <meta name="theme-color" content="#1A73E8">
     
     <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:italic,wght@0,600;1,400&family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
-    
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 
@@ -356,7 +357,7 @@ body.dark-mode ::placeholder {
         </section>
     </main>
 
-    <main id="page-stats" class="hidden">
+<main id="page-stats" class="hidden">
         <div class="stat-big-card">
             <small style="text-transform:uppercase; font-weight:800; opacity:0.8; font-size: 0.65rem;">Ore Totali Mese</small>
             <h2 id="stat-tot-mese" style="font-size: 2.5rem; margin:15px 0; font-weight:800;">0h 0m</h2>
@@ -367,6 +368,12 @@ body.dark-mode ::placeholder {
                 <div><small style="font-size: 0.6rem;">☕️ NASTRI</small><br><b id="stat-nastri" style="font-size:0.85rem;">0</b></div>
             </div>
         </div>
+
+        <div class="card" style="padding: 15px; height: 250px;">
+            <h3 style="margin-top:0; font-size:0.75rem; text-transform:uppercase; color:var(--primary); font-weight: 800; margin-bottom:10px;">Andamento Ore Annuale</h3>
+            <canvas id="graficoOre"></canvas>
+        </div>
+
         <div class="card">
             <h3 style="margin-top:0; font-size:0.75rem; text-transform:uppercase; color:var(--primary); font-weight: 800;">Riepilogo Altri Eventi</h3>
             <div id="lista-stat-eventi"></div>
@@ -767,15 +774,36 @@ async function esportaPDF(filtro) {
 
     function eliminaTurno(d) { if(confirm("Eliminare?")) db.transaction("turni", "readwrite").objectStore("turni").delete(d).onsuccess = () => renderCalendar(); }
     
+let myChart = null; // Serve a gestire il reset del grafico
+
 function caricaStatistiche() {
-    const meseMesso = `${currentViewDate.getFullYear()}-${String(currentViewDate.getMonth()+1).padStart(2,'0')}`;
+    const annoCorrente = currentViewDate.getFullYear();
+    const meseMesso = `${annoCorrente}-${String(currentViewDate.getMonth()+1).padStart(2,'0')}`;
+    
+    // Variabili Mese Corrente (Logica Nativa + Aggiunte confermate)
     let mGen = 0, mNotte = 0, mExtra = 0, nNastri = 0, counts = {}, sMinuti = 0, sGiorni = 0, festiviLavorati = 0;
     
+    // Array per il Grafico (12 mesi)
+    let datiAnnuali = new Array(12).fill(0); 
+
     db.transaction("turni").objectStore("turni").openCursor().onsuccess = e => {
         const cursor = e.target.result;
         if (cursor) {
-            if (cursor.value.data.startsWith(meseMesso)) {
-                const t = cursor.value, dt = new Date(t.data), fest = isFestivo(dt.getDate(), dt.getMonth(), dt.getFullYear());
+            const t = cursor.value;
+            const dataTurno = new Date(t.data);
+            const fest = isFestivo(dataTurno.getDate(), dataTurno.getMonth(), dataTurno.getFullYear());
+
+            // --- LOGICA GRAFICO (Scansione annuale) ---
+            if (dataTurno.getFullYear() === annoCorrente && t.tipo === 'Lavoro') {
+                const d1 = calcolaDettagli(t.i1, t.f1);
+                const d2 = calcolaDettagli(t.i2, t.f2);
+                const de = calcolaDettagli(t.ei, t.ef);
+                // Sommiamo le ore decimali per il grafico
+                datiAnnuali[dataTurno.getMonth()] += (d1.totale + d2.totale + de.totale) / 60;
+            }
+
+            // --- LOGICA MESE SELEZIONATO (Nativa) ---
+            if (t.data.startsWith(meseMesso)) {
                 if (t.tipo === 'Lavoro') {
                     if(fest) festiviLavorati++;
                     const d1 = calcolaDettagli(t.i1, t.f1), 
@@ -787,7 +815,7 @@ function caricaStatistiche() {
                     mNotte += (d1.notte + d2.notte + de.notte); 
                     mExtra += de.totale;
 
-                    // Calcolo Nastri: stacco di almeno 60 minuti tra fine1 e inizio2
+                    // Calcolo Nastri
                     if (t.f1 && t.i2) {
                         let [hF1, mF1] = t.f1.split(':').map(Number);
                         let [hI2, mI2] = t.i2.split(':').map(Number);
@@ -798,46 +826,61 @@ function caricaStatistiche() {
                     }
 
                     // Calcolo Scioperi
-                    if(t.si && t.sf) { 
-                        sGiorni++; 
-                        sMinuti += ds.totale; 
-                    }
+                    if(t.si && t.sf) { sGiorni++; sMinuti += ds.totale; }
                 } else {
                     counts[t.tipo] = (counts[t.tipo] || 0) + 1;
                 }
             }
             cursor.continue();
         } else {
-            // Aggiornamento Card Superiori
+            // Aggiornamento UI Testuale
             document.getElementById('stat-tot-mese').innerText = formattaMinuti(mGen);
             document.getElementById('stat-diurno').innerText = formattaMinuti(mGen - mNotte);
             document.getElementById('stat-notte').innerText = formattaMinuti(mNotte);
             document.getElementById('stat-extra').innerText = formattaMinuti(mExtra);
-            
-            // Aggiornamento Card Nastri (se presente nell'HTML)
-            if(document.getElementById('stat-nastri')) {
-                document.getElementById('stat-nastri').innerText = nNastri;
-            }
+            if(document.getElementById('stat-nastri')) document.getElementById('stat-nastri').innerText = nNastri;
 
             const list = document.getElementById('lista-stat-eventi'); 
             list.innerHTML = "";
             
-            // Riga Sciopero (Nera/Testo)
             if(sGiorni > 0) {
-                list.innerHTML += `
-                    <div class="stat-row text-sciopero">
-                        <b>Sciopero</b>
-                        <b>${sGiorni} gg (${formattaMinuti(sMinuti)})</b>
-                    </div>`;
+                list.innerHTML += `<div class="stat-row text-sciopero"><b>Sciopero</b><b>${sGiorni} gg (${formattaMinuti(sMinuti)})</b></div>`;
             }
 
-            // Altri Eventi (Riposo, Ferie, ecc.)
             const ord = ['Riposo','Ferie','Malattia','104','Permesso','Congedo','Lp','Altro'];
-            ord.forEach(k => { 
-                if(counts[k]) list.innerHTML += `<div class="stat-row text-${k.toLowerCase()}"><b>${k}</b><b>${counts[k]}</b></div>`; 
-            });
+            ord.forEach(k => { if(counts[k]) list.innerHTML += `<div class="stat-row text-${k.toLowerCase()}"><b>${k}</b><b>${counts[k]}</b></div>`; });
+
+            // DISEGNO FINALE DEL GRAFICO
+            disegnaGrafico(datiAnnuali);
         }
     };
+}
+
+function disegnaGrafico(dati) {
+    const ctx = document.getElementById('graficoOre').getContext('2d');
+    if (myChart) { myChart.destroy(); }
+    myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['G','F','M','A','M','G','L','A','S','O','N','D'],
+            datasets: [{
+                label: 'Ore Lavorate',
+                data: dati,
+                backgroundColor: '#1A73E8', // Blu Tema
+                borderRadius: 6,
+                borderSkipped: false,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { size: 10 } } },
+                x: { grid: { display: false }, ticks: { font: { size: 11, weight: 'bold' } } }
+            }
+        }
+    });
 }
 
     // Funzione per aprire/chiudere il menu
@@ -932,6 +975,7 @@ function modificaNota(id) {
 </script>
 </body>
 </html>
+
 
 
 
