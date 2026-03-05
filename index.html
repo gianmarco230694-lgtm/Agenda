@@ -878,13 +878,68 @@ function disegnaGraficoAnnuale(dati) {
 function disegnaGraficoSettimanale(dati) {
     const ctx = document.getElementById('graficoSettimana').getContext('2d');
     if (chartSettimana) chartSettimana.destroy();
+
     chartSettimana = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: ['Lun','Mar','Mer','Gio','Ven','Sab','Dom'],
-            datasets: [{ data: dati, backgroundColor: '#8AB4F8', borderRadius: 5 }]
+            datasets: [{ 
+                data: dati, 
+                backgroundColor: '#8AB4F8', 
+                borderRadius: 5 
+            }]
         },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, display: false }, x: { grid: { display: false }, ticks: { font: { size: 10, weight: 'bold' } } } } }
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false,
+            layout: {
+                padding: { top: 20 } // Spazio extra sopra le barre per non tagliare le scritte
+            },
+            plugins: { 
+                legend: { display: false },
+                // PLUGIN PER SCRIVERE SOPRA LE BARRE
+                tooltip: { enabled: true },
+                datalabels: { // Se deciderai di aggiungere il plugin esterno, ma intanto usiamo il metodo nativo sotto
+                    display: false 
+                }
+            }, 
+            scales: { 
+                y: { 
+                    beginAtZero: true, 
+                    display: false,
+                    suggestedMax: Math.max(...dati) + 2 // Alza il tetto del grafico per far stare le scritte
+                }, 
+                x: { 
+                    grid: { display: false }, 
+                    ticks: { font: { size: 10, weight: 'bold' } } 
+                } 
+            }
+        },
+        // AGGIUNGIAMO IL DISEGNO MANUALE DEL TESTO
+        plugins: [{
+            id: 'datalabelsCustom',
+            afterDatasetsDraw(chart) {
+                const {ctx, data} = chart;
+                ctx.save();
+                ctx.font = 'bold 10px Montserrat';
+                ctx.fillStyle = document.body.classList.contains('dark-mode') ? 'white' : '#1A73E8';
+                ctx.textAlign = 'center';
+
+                data.datasets[0].data.forEach((datapoint, i) => {
+                    if (datapoint > 0) {
+                        const {x, y} = chart.getDatasetMeta(0).data[i];
+                        
+                        // Trasformiamo il decimale (es 7.5) in formato 7h 30m
+                        const oreIntere = Math.floor(datapoint);
+                        const minuti = Math.round((datapoint - oreIntere) * 60);
+                        const label = `${oreIntere}h ${minuti}m`;
+                        
+                        ctx.fillText(label, x, y - 10);
+                    }
+                });
+                ctx.restore();
+            }
+        }]
     });
 }
 
