@@ -374,6 +374,21 @@ body.dark-mode ::placeholder {
             <canvas id="graficoOre"></canvas>
         </div>
 
+    <div class="card" style="padding: 15px; height: 250px;">
+    <h3 style="margin-top:0; font-size:0.75rem; text-transform:uppercase; color:var(--primary); font-weight: 800; margin-bottom:10px;">Andamento Ore Annuale</h3>
+    <canvas id="graficoOre"></canvas>
+</div>
+
+<div class="card" style="padding: 15px; height: 200px; margin-top: 15px;">
+    <h3 style="margin-top:0; font-size:0.75rem; text-transform:uppercase; color:var(--primary); font-weight: 800; margin-bottom:10px;">Questa Settimana (Ore)</h3>
+    <canvas id="graficoSettimana"></canvas>
+</div>
+
+<div class="card">
+    <h3 style="margin-top:0; font-size:0.75rem; text-transform:uppercase; color:var(--primary); font-weight: 800;">Riepilogo Altri Eventi</h3>
+    <div id="lista-stat-eventi"></div>
+</div>
+
         <div class="card">
             <h3 style="margin-top:0; font-size:0.75rem; text-transform:uppercase; color:var(--primary); font-weight: 800;">Riepilogo Altri Eventi</h3>
             <div id="lista-stat-eventi"></div>
@@ -774,58 +789,58 @@ async function esportaPDF(filtro) {
 
     function eliminaTurno(d) { if(confirm("Eliminare?")) db.transaction("turni", "readwrite").objectStore("turni").delete(d).onsuccess = () => renderCalendar(); }
     
-let myChart = null; // Serve a gestire il reset del grafico
+let myChart = null; 
+let chartSettimana = null; // Aggiunta per il nuovo grafico
 
 function caricaStatistiche() {
     const annoCorrente = currentViewDate.getFullYear();
     const meseMesso = `${annoCorrente}-${String(currentViewDate.getMonth()+1).padStart(2,'0')}`;
     
-    // Variabili Mese Corrente (Logica Nativa + Aggiunte confermate)
-    let mGen = 0, mNotte = 0, mExtra = 0, nNastri = 0, counts = {}, sMinuti = 0, sGiorni = 0, festiviLavorati = 0;
-    
-    // Array per il Grafico (12 mesi)
+    let mGen = 0, mNotte = 0, mExtra = 0, nNastri = 0, counts = {}, sMinuti = 0, sGiorni = 0;
     let datiAnnuali = new Array(12).fill(0); 
+    
+    // CALCOLO DATE SETTIMANA CORRENTE
+    let datiSettimanali = new Array(7).fill(0);
+    const oggi = new Date();
+    const giornoSettimana = oggi.getDay() === 0 ? 6 : oggi.getDay() - 1; 
+    const inizioSettimana = new Date(oggi);
+    inizioSettimana.setDate(oggi.getDate() - giornoSettimana);
+    inizioSettimana.setHours(0,0,0,0);
+    const fineSettimana = new Date(inizioSettimana);
+    fineSettimana.setDate(inizioSettimana.getDate() + 6);
+    fineSettimana.setHours(23,59,59,999);
 
     db.transaction("turni").objectStore("turni").openCursor().onsuccess = e => {
         const cursor = e.target.result;
         if (cursor) {
             const t = cursor.value;
-            const dataTurno = new Date(t.data);
-            const fest = isFestivo(dataTurno.getDate(), dataTurno.getMonth(), dataTurno.getFullYear());
-
-            // --- LOGICA GRAFICO (Scansione annuale) ---
-            if (dataTurno.getFullYear() === annoCorrente && t.tipo === 'Lavoro') {
-                const d1 = calcolaDettagli(t.i1, t.f1);
-                const d2 = calcolaDettagli(t.i2, t.f2);
-                const de = calcolaDettagli(t.ei, t.ef);
-                // Sommiamo le ore decimali per il grafico
-                datiAnnuali[dataTurno.getMonth()] += (d1.totale + d2.totale + de.totale) / 60;
+            const dataT = new Date(t.data);
+            
+            // Logica Grafico Annuale
+            if (dataT.getFullYear() === annoCorrente && t.tipo === 'Lavoro') {
+                const d = calcolaDettagli(t.i1, t.f1), d2 = calcolaDettagli(t.i2, t.f2), de = calcolaDettagli(t.ei, t.ef);
+                datiAnnuali[dataT.getMonth()] += (d.totale + d2.totale + de.totale) / 60;
+                
+                // 2. LOGICA GRAFICO SETTIMANALE (Se il turno è in questa settimana)
+                if (dataT >= inizioSettimana && dataT <= fineSettimana) {
+                    const dayIdx = dataT.getDay() === 0 ? 6 : dataT.getDay() - 1;
+                    datiSettimanali[dayIdx] += (d.totale + d2.totale + de.totale) / 60;
+                }
             }
 
-            // --- LOGICA MESE SELEZIONATO (Nativa) ---
             if (t.data.startsWith(meseMesso)) {
+                // ... qui c'è la tua logica dei nastri e scioperi che rimane uguale ...
                 if (t.tipo === 'Lavoro') {
-                    if(fest) festiviLavorati++;
-                    const d1 = calcolaDettagli(t.i1, t.f1), 
-                          d2 = calcolaDettagli(t.i2, t.f2), 
-                          de = calcolaDettagli(t.ei, t.ef), 
-                          ds = calcolaDettagli(t.si, t.sf);
-                    
+                    const d1 = calcolaDettagli(t.i1, t.f1), d2 = calcolaDettagli(t.i2, t.f2), de = calcolaDettagli(t.ei, t.ef), ds = calcolaDettagli(t.si, t.sf);
                     mGen += (d1.totale + d2.totale + de.totale); 
                     mNotte += (d1.notte + d2.notte + de.notte); 
                     mExtra += de.totale;
-
-                    // Calcolo Nastri
                     if (t.f1 && t.i2) {
-                        let [hF1, mF1] = t.f1.split(':').map(Number);
-                        let [hI2, mI2] = t.i2.split(':').map(Number);
-                        let fine1 = hF1 * 60 + mF1;
-                        let inizio2 = hI2 * 60 + mI2;
-                        if (inizio2 < fine1) inizio2 += 1440; 
-                        if ((inizio2 - fine1) >= 60) { nNastri++; }
+                        let fine1 = Number(t.f1.split(':')[0])*60 + Number(t.f1.split(':')[1]);
+                        let in2 = Number(t.i2.split(':')[0])*60 + Number(t.i2.split(':')[1]);
+                        if (in2 < fine1) in2 += 1440;
+                        if ((in2 - fine1) >= 60) nNastri++;
                     }
-
-                    // Calcolo Scioperi
                     if(t.si && t.sf) { sGiorni++; sMinuti += ds.totale; }
                 } else {
                     counts[t.tipo] = (counts[t.tipo] || 0) + 1;
@@ -833,7 +848,7 @@ function caricaStatistiche() {
             }
             cursor.continue();
         } else {
-            // Aggiornamento UI Testuale
+            // DISEGNO UI
             document.getElementById('stat-tot-mese').innerText = formattaMinuti(mGen);
             document.getElementById('stat-diurno').innerText = formattaMinuti(mGen - mNotte);
             document.getElementById('stat-notte').innerText = formattaMinuti(mNotte);
@@ -842,18 +857,41 @@ function caricaStatistiche() {
 
             const list = document.getElementById('lista-stat-eventi'); 
             list.innerHTML = "";
-            
-            if(sGiorni > 0) {
-                list.innerHTML += `<div class="stat-row text-sciopero"><b>Sciopero</b><b>${sGiorni} gg (${formattaMinuti(sMinuti)})</b></div>`;
-            }
-
+            if(sGiorni > 0) list.innerHTML += `<div class="stat-row text-sciopero"><b>Sciopero</b><b>${sGiorni} gg (${formattaMinuti(sMinuti)})</b></div>`;
             const ord = ['Riposo','Ferie','Malattia','104','Permesso','Congedo','Lp','Altro'];
             ord.forEach(k => { if(counts[k]) list.innerHTML += `<div class="stat-row text-${k.toLowerCase()}"><b>${k}</b><b>${counts[k]}</b></div>`; });
 
-            // DISEGNO FINALE DEL GRAFICO
+            // CHIAMATA AI DUE GRAFICI
             disegnaGrafico(datiAnnuali);
+            disegnaGraficoSettimanale(datiSettimanali);
         }
     };
+}
+
+// FUNZIONE PER IL NUOVO GRAFICO SETTIMANALE
+function disegnaGraficoSettimanale(dati) {
+    const ctx = document.getElementById('graficoSettimana').getContext('2d');
+    if (chartSettimana) { chartSettimana.destroy(); }
+    chartSettimana = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'],
+            datasets: [{
+                data: dati,
+                backgroundColor: '#8AB4F8', // Blu più chiaro
+                borderRadius: 5,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { display: false }, ticks: { display: false } },
+                x: { grid: { display: false }, ticks: { font: { size: 10, weight: 'bold' } } }
+            }
+        }
+    });
 }
 
 function disegnaGrafico(dati) {
@@ -975,6 +1013,7 @@ function modificaNota(id) {
 </script>
 </body>
 </html>
+
 
 
 
