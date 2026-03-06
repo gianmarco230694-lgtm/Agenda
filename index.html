@@ -271,7 +271,11 @@ body.dark-mode ::placeholder {
     <div class="ham-item" onclick="toggleDarkMode(); chiudiMenu();">💡 Cambia Tema</div>
     <div class="ham-item" onclick="esportaPDF('mese'); chiudiMenu();">📑 Scarica Mese (PDF)</div>
     <div class="ham-item" onclick="esportaPDF('anno'); chiudiMenu();">📅 Scarica Anno (PDF)</div>
-    <div class="ham-item" onclick="apriNote(); chiudiMenu();">📝 Note Personali</div>
+    <div class="ham-item" onclick="apriNote(); chiudiMenu();">📒 Note Personali</div>
+    <div class="ham-item" onclick="esportaBackup(); chiudiMenu();" style="color: #22c55e;">📤 Salva Backup</div>
+    <div class="ham-item" onclick="document.getElementById('fileInput').click(); chiudiMenu();" style="color: #ea8a04;">📥 Ripristina Dati</div>
+    
+    <input type="file" id="fileInput" style="display:none" accept=".json" onchange="importaBackup(event)">
 </div>
 
 <header style="display: grid; grid-template-columns: 80px 1fr 80px; align-items: center; margin-bottom: 30px;">
@@ -1120,9 +1124,72 @@ function modificaNota(id) {
         document.getElementById('schermata-note').scrollTo({top: 0, behavior: 'smooth'});
     }
 }
+
+    // --- FUNZIONI DI SICUREZZA DATI (BACKUP) ---
+
+function esportaBackup() {
+    // Apriamo la transazione sul tuo database specifico
+    const transaction = db.transaction(["turni"], "readonly");
+    const store = transaction.objectStore("turni");
+    const request = store.getAll();
+
+    request.onsuccess = function() {
+        const backupData = {
+            turni: request.result,
+            rubrica: JSON.parse(localStorage.getItem('rubrica_contatti')) || [],
+            noteLibere: JSON.parse(localStorage.getItem('mie_note_libere')) || []
+        };
+        
+        const blob = new Blob([JSON.stringify(backupData)], {type: "application/json"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        const dataOggi = new Date().toISOString().slice(0,10);
+        
+        a.href = url;
+        a.download = `backup_agenda_${dataOggi}.json`;
+        a.click();
+        
+        alert("Backup creato con successo! Include turni, rubrica e note.");
+    };
+}
+
+function importaBackup(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const backup = JSON.parse(e.target.result);
+            
+            // 1. Ripristino Database IndexedDB (Turni)
+            const transaction = db.transaction(["turni"], "readwrite");
+            const store = transaction.objectStore("turni");
+            store.clear();
+            
+            // Supporto sia per vecchi backup (solo array) che nuovi (oggetto completo)
+            const datiTurni = Array.isArray(backup) ? backup : backup.turni;
+            datiTurni.forEach(item => store.put(item));
+
+            // 2. Ripristino LocalStorage (Rubrica e Note) se presenti nel file
+            if (backup.rubrica) localStorage.setItem('rubrica_contatti', JSON.stringify(backup.rubrica));
+            if (backup.noteLibere) localStorage.setItem('mie_note_libere', JSON.stringify(backup.noteLibere));
+
+            transaction.oncomplete = function() {
+                alert("✅ Dati ripristinati correttamente! L'app verrà ricaricata.");
+                location.reload();
+            };
+        } catch (err) {
+            alert("Errore: Il file non è un backup valido.");
+            console.error(err);
+        }
+    };
+    reader.readAsText(file);
+}
 </script>
 </body>
 </html>
+
 
 
 
