@@ -389,6 +389,12 @@ body.dark-mode ::placeholder {
     <canvas id="graficoSettimana"></canvas>
 </div>
 
+    <div class="card" style="padding: 15px; height: 350px; margin-top: 15px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h3 style="margin:0; font-size:0.75rem; text-transform:uppercase; color:var(--primary); font-weight: 800;">Analisi Impegno Mensile</h3>
+    </div>
+    <canvas id="graficoRadar"></canvas>
+</div>
         <div class="card">
             <h3 style="margin-top:0; font-size:0.75rem; text-transform:uppercase; color:var(--primary); font-weight: 800;">Riepilogo Altri Eventi</h3>
             <div id="lista-stat-eventi"></div>
@@ -796,20 +802,16 @@ function caricaStatistiche() {
     const annoCorrente = currentViewDate.getFullYear();
     const meseMesso = `${annoCorrente}-${String(currentViewDate.getMonth()+1).padStart(2,'0')}`;
     
-    // Reset variabili
-    let mGen = 0, mNotte = 0, mExtra = 0, nNastri = 0, counts = {}, sMinuti = 0, sGiorni = 0;
+    let mGen = 0, mNotte = 0, mExtra = 0, nNastri = 0, counts = {};
+    let nGiorniLavoro = 0, nScioperi = 0, nFestiviLavorati = 0;
     let datiAnnuali = new Array(12).fill(0); 
     let datiSettimanali = new Array(7).fill(0);
     
-    // Calcolo settimana
     const oggi = new Date();
     const giornoSettimana = oggi.getDay() === 0 ? 6 : oggi.getDay() - 1; 
     const inizioSettimana = new Date(oggi);
     inizioSettimana.setDate(oggi.getDate() - giornoSettimana);
     inizioSettimana.setHours(0,0,0,0);
-    const fineSettimana = new Date(inizioSettimana);
-    fineSettimana.setDate(inizioSettimana.getDate() + 6);
-    fineSettimana.setHours(23,59,59,999);
 
     db.transaction("turni").objectStore("turni").openCursor().onsuccess = e => {
         const cursor = e.target.result;
@@ -821,17 +823,19 @@ function caricaStatistiche() {
                 const d1 = calcolaDettagli(t.i1, t.f1), d2 = calcolaDettagli(t.i2, t.f2), de = calcolaDettagli(t.ei, t.ef);
                 const oreGiorno = (d1.totale + d2.totale + de.totale) / 60;
 
-                // Dati per i grafici (Sempre, indipendentemente dal mese visualizzato)
-                if (dataT.getFullYear() === annoCorrente) {
-                    datiAnnuali[dataT.getMonth()] += oreGiorno;
-                }
-                if (dataT >= inizioSettimana && dataT <= fineSettimana) {
+                if (dataT.getFullYear() === annoCorrente) datiAnnuali[dataT.getMonth()] += oreGiorno;
+                if (dataT >= inizioSettimana) {
                     const dayIdx = dataT.getDay() === 0 ? 6 : dataT.getDay() - 1;
-                    datiSettimanali[dayIdx] += oreGiorno;
+                    if (dayIdx >= 0 && dayIdx < 7) datiSettimanali[dayIdx] += oreGiorno;
                 }
 
-                // Dati solo per il MESE selezionato
                 if (t.data.startsWith(meseMesso)) {
+                    nGiorniLavoro++; // PUNTO CHIAVE: Conta i giorni
+                    if (t.si) nScioperi++; // PUNTO CHIAVE: Conta gli scioperi
+                    
+                    const dt = new Date(t.data);
+                    if (isFestivo(dt.getDate(), dt.getMonth(), dt.getFullYear())) nFestiviLavorati++;
+
                     mGen += (d1.totale + d2.totale + de.totale); 
                     mNotte += (d1.notte + d2.notte + de.notte); 
                     mExtra += de.totale;
@@ -841,44 +845,38 @@ function caricaStatistiche() {
                         if (i2m < f1m) i2m += 1440;
                         if ((i2m - f1m) >= 60) nNastri++;
                     }
-                    if(t.si && t.sf) { 
-                        const ds = calcolaDettagli(t.si, t.sf);
-                        sGiorni++; sMinuti += ds.totale; 
-                    }
                 }
             } else if (t.data.startsWith(meseMesso)) {
                 counts[t.tipo] = (counts[t.tipo] || 0) + 1;
             }
             cursor.continue();
         } else {
-            // Scrittura dati nelle card
+            // Prepariamo l'oggetto finale per il Radar
+            counts['Lavoro'] = nGiorniLavoro;
+            counts['Nastri'] = nNastri;
+            counts['Festivi'] = nFestiviLavorati;
+            counts['Sciopero'] = nScioperi;
+
             document.getElementById('stat-tot-mese').innerText = formattaMinuti(mGen);
             document.getElementById('stat-diurno').innerText = formattaMinuti(mGen - mNotte);
             document.getElementById('stat-notte').innerText = formattaMinuti(mNotte);
             document.getElementById('stat-extra').innerText = formattaMinuti(mExtra);
             if(document.getElementById('stat-nastri')) document.getElementById('stat-nastri').innerText = nNastri;
 
-            // Scrittura Riepilogo (Pulisce prima di scrivere!)
             const list = document.getElementById('lista-stat-eventi'); 
             list.innerHTML = "";
-            if(sGiorni > 0) list.innerHTML += `<div class="stat-row text-sciopero"><b>Sciopero</b><b>${sGiorni} gg (${formattaMinuti(sMinuti)})</b></div>`;
             const ord = ['Riposo','Ferie','Malattia','104','Permesso','Congedo','Lp','Altro'];
-            ord.forEach(k => { if(counts[k]) list.innerHTML += `<div class="stat-row text-${k.toLowerCase()}"><b>${k}</b><b>${counts[k]}</b></div>`; });
+            ord.forEach(k => { if(counts[k]) list.innerHTML += `<div class="stat-row text-${k.toLowerCase()}"><b>${k}</b><b>${counts[k]} gg</b></div>`; });
 
-            // CALCOLO SOMMA SETTIMANALE PER LA SCRITTA
-            const minutiSettimana = datiSettimanali.reduce((a, b) => a + b, 0) * 60;
-            document.getElementById('totale-settimana').innerText = formattaMinuti(Math.round(minutiSettimana));
-
-            // CALCOLO SOMMA ANNUALE (Prende l'array datiAnnuali, lo somma e trasforma in ore/minuti)
-const minutiAnno = datiAnnuali.reduce((a, b) => a + b, 0) * 60;
-const labelAnno = document.getElementById('totale-anno');
-if (labelAnno) {
-    labelAnno.innerText = formattaMinuti(Math.round(minutiAnno));
-}
+            document.getElementById('totale-settimana').innerText = formattaMinuti(Math.round(datiSettimanali.reduce((a, b) => a + b, 0) * 60));
             
-            // Disegno i due grafici
+            const labelAnno = document.getElementById('totale-anno');
+            if (labelAnno) labelAnno.innerText = formattaMinuti(Math.round(datiAnnuali.reduce((a, b) => a + b, 0) * 60));
+            
+            // Lancio dei 3 grafici
             disegnaGraficoAnnuale(datiAnnuali);
             disegnaGraficoSettimanale(datiSettimanali);
+            disegnaGraficoRadar(counts); // <--- Lancio ragnatela
         }
     };
 }
@@ -1185,6 +1183,67 @@ function importaBackup(event) {
         }
     };
     reader.readAsText(file);
+}
+
+    let myRadarChart = null;
+
+function disegnaGraficoRadar(counts) {
+    const ctx = document.getElementById('graficoRadar').getContext('2d');
+    if (myRadarChart) myRadarChart.destroy();
+
+    const labels = ['Lavoro', 'Riposo', 'Ferie', 'Malattia', '104', 'Permesso', 'Congedo', 'Lp', 'Altro', 'Nastri', 'Festivi', 'Sciopero'];
+    const dataValues = labels.map(label => counts[label] || 0);
+
+    myRadarChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: dataValues,
+                backgroundColor: 'rgba(26, 115, 232, 0.2)',
+                borderColor: '#1A73E8',
+                borderWidth: 2,
+                pointBackgroundColor: '#1A73E8',
+                pointRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                r: {
+                    angleLines: { color: 'rgba(0,0,0,0.1)' },
+                    grid: { color: 'rgba(0,0,0,0.1)' },
+                    suggestedMin: 0,
+                    ticks: { display: false },
+                    pointLabels: {
+                        font: { size: 9, weight: 'bold' },
+                        color: document.body.classList.contains('dark-mode') ? '#F8FAFC' : '#111827'
+                    }
+                }
+            },
+            // DISEGNO DEI NUMERI SOPRA I PUNTI
+            animation: {
+                onComplete: function() {
+                    const ctx = this.ctx;
+                    ctx.font = "bold 10px Montserrat";
+                    ctx.textAlign = 'center';
+                    ctx.fillStyle = document.body.classList.contains('dark-mode') ? 'white' : '#1A73E8';
+
+                    this.data.datasets.forEach(function(dataset, i) {
+                        const meta = myRadarChart.getDatasetMeta(i);
+                        meta.data.forEach(function(point, index) {
+                            const val = dataset.data[index];
+                            if (val > 0) {
+                                ctx.fillText(val + " gg", point.x, point.y - 10);
+                            }
+                        });
+                    });
+                }
+            }
+        }
+    });
 }
 </script>
 </body>
